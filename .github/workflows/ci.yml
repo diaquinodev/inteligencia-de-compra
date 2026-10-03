@@ -20,4 +20,5 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy src
+      - run: sqlfluff lint sql
       - run: pytest -q
