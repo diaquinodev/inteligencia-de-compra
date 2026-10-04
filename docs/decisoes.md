@@ -81,6 +81,24 @@ Por isso dá para comparar o preço de uma compra com a mediana do seu grupo na 
 - **Por que estrela:** o Power BI filtra da dimensão para a fato. Uma tabela única
   funcionaria, mas repetiria nome de fornecedor e descrição de item em 334 mil linhas.
 
+## Painel como código
+
+- **O quê:** o painel do Power BI é gerado por um script a partir de texto (medidas, páginas
+  e tema). Outro script abre o projeto, carrega os dados e compara 23 valores com o BigQuery.
+- **Por quê:** um `.pbix` é binário. Mudar uma medida ou um gráfico não aparece em revisão,
+  e conferir números a olho não escala. Em texto, o painel passa pelo mesmo caminho do
+  resto do código: diff, teste e CI.
+- **Conferência independente:** os valores esperados são calculados em SQL direto da tabela
+  fato, sem usar as medidas DAX. Dois caminhos diferentes que chegam ao mesmo número.
+- **O que os testes pegaram:** uma medida de participação acumulada que não terminava; uma
+  participação que, com filtro de "N maiores", somaria 100% entre os N; e um script que
+  travava o Power BI ao pedir a carga de dados cedo demais.
+- **Objeção:** "isso não é exagero para um painel?" Para um painel só, montar à mão é mais
+  rápido. O ganho aparece na segunda alteração: mudar uma medida e saber em 2 minutos, por
+  programa, que os números continuam batendo.
+- **Limite honesto:** depende do Power BI Desktop no Windows, e o formato dos arquivos muda
+  entre versões. Os esquemas usados estão fixados e copiados nos testes.
+
 ## As três estimativas de economia
 
 - **Teto (R$ 2.269,8 mi):** todo mundo paga a mediana. Irreal, serve de limite superior.
@@ -96,3 +114,4 @@ Por isso dá para comparar o preço de uma compra com a mediana do seu grupo na 
   onde um modelo de linguagem ajuda, com medição de acerto).
 - Converter embalagens para unidade base.
 - Rodar o pipeline agendado e migrar o SQL para dbt.
+- Publicar o painel no serviço do Power BI a partir do projeto, também por script.

@@ -55,6 +55,18 @@ fornecedores.
   economia (R$ 2.269,8 mi, R$ 1.074,9 mi e R$ 263,7 mi), e a decisão usa a menor. O
   raciocínio está em [docs/analises.md](docs/analises.md).
 
+## O painel
+
+Três páginas, uma por pergunta. O painel é **gerado por código** e seus números são
+conferidos automaticamente contra o BigQuery (23 de 23 valores conferem); o processo está em
+[powerbi/README.md](powerbi/README.md).
+
+![Onde está o gasto](docs/img/painel-gasto.png)
+
+![Onde se paga caro](docs/img/painel-preco.png)
+
+![Quanto dá para economizar](docs/img/painel-economia.png)
+
 ## Como foi construído
 
 ```mermaid
@@ -77,7 +89,7 @@ flowchart LR
 | Modelo estrela | fato de itens comprados e quatro dimensões | [docs/modelo.md](docs/modelo.md) |
 | Análises | as três perguntas, com números e limites | [docs/analises.md](docs/analises.md) |
 | Decisões | por que cada escolha foi feita e o que ela não resolve | [docs/decisoes.md](docs/decisoes.md) |
-| Power BI | medidas DAX versionadas e roteiro de montagem | [powerbi/](powerbi/) |
+| Power BI como código | painel gerado por script (PBIP, TMDL), 30 medidas DAX, conferência automática contra o BigQuery | [powerbi/README.md](powerbi/README.md) |
 | Controle de custo | estimativa e teto de bytes em toda consulta | [src/compras/executor.py](src/compras/executor.py) |
 
 ### Achados de qualidade de dados
@@ -109,6 +121,9 @@ python -m compras construir       # cria as 18 tabelas (cerca de 1 minuto)
 python -m compras testar          # roda os 11 testes de qualidade
 ```
 
+O painel tem seu próprio passo a passo (gerar, abrir, conferir e capturar) em
+[powerbi/README.md](powerbi/README.md); essa parte exige Windows e Power BI Desktop.
+
 Saída esperada do último comando: `11 de 11 regras passaram.`
 
 Outras opções:
@@ -124,17 +139,17 @@ python -m compras construir --prefixo 5     # recria só as análises (mart_)
 | `COMPRAS_DATASET` | `compras` | conjunto de dados de destino |
 | `COMPRAS_TETO_GIB` | `6` | máximo de dados que uma consulta pode ler |
 
-Verificações do código: `ruff check .`, `mypy src`, `sqlfluff lint sql`, `pytest`.
+Verificações do código: `ruff check .`, `mypy src`, `sqlfluff lint sql`, `pytest` (24 testes).
 
 ## Estrutura
 
 ```
 sql/            um arquivo por tabela, em ordem de execução (raw, stg, dim, fato, mart)
 sql/tests/      testes de qualidade: consultas que devem voltar vazias
-src/compras/    executor, testes de qualidade e linha de comando
-tests/          testes do executor (sem acesso ao BigQuery)
+src/compras/    executor, testes de qualidade, gerador do painel e linha de comando
+tests/          testes do executor e do gerador do painel (sem acesso ao BigQuery)
 docs/           validação, qualidade, modelo, análises e decisões
-powerbi/        medidas DAX e roteiro do painel
+powerbi/        projeto do painel (PBIP), medidas DAX e scripts de abrir, conferir e capturar
 ```
 
 ## Próximos passos
