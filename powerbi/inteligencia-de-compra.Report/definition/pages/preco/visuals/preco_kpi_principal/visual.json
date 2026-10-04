@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
-  "name": "economia_kpi_3",
+  "name": "preco_kpi_principal",
   "position": {
-    "x": 960.0,
-    "y": 92,
-    "z": 13,
-    "height": 100,
-    "width": 296.0,
-    "tabOrder": 13
+    "x": 24,
+    "y": 100,
+    "z": 10,
+    "height": 96,
+    "width": 304,
+    "tabOrder": 10
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "% Economia Defensável"
+                  "Property": "Gasto Acima do P75"
                 }
               },
-              "queryRef": "Medidas.% Economia Defensável",
-              "displayName": "Defensável sobre o gasto homogêneo"
+              "queryRef": "Medidas.Gasto Acima do P75",
+              "displayName": "Gasto em compras acima do terceiro quartil (P75)"
             }
           ]
         }
@@ -41,6 +41,21 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "36D"
                 }
               }
             }

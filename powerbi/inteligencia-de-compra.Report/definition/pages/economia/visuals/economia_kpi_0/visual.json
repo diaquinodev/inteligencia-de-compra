@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "economia_kpi_0",
   "position": {
-    "x": 24.0,
-    "y": 92,
-    "z": 10,
-    "height": 100,
-    "width": 296.0,
-    "tabOrder": 10
+    "x": 344.0,
+    "y": 100,
+    "z": 11,
+    "height": 96,
+    "width": 293.3333333333333,
+    "tabOrder": 11
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Economia Teto"
+                  "Property": "% Economia Defensável"
                 }
               },
-              "queryRef": "Medidas.Economia Teto",
-              "displayName": "Teto: todos pagam a mediana"
+              "queryRef": "Medidas.% Economia Defensável",
+              "displayName": "Defensável sobre o gasto homogêneo"
             }
           ]
         }

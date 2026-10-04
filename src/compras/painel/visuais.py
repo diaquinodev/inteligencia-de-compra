@@ -163,17 +163,24 @@ def filtro_n_maiores(nome: str, coluna: Coluna, por: Medida, quantidade: int) ->
     }
 
 
-def cartao(nome: str, posicao: Posicao, ordem: int, medida: Medida, rotulo: str) -> Json:
-    return _visual(
-        nome,
-        posicao,
-        ordem,
-        {
-            "visualType": "card",
-            "query": {"queryState": {"Values": _papel((medida, rotulo))}},
-            "visualContainerObjects": _sem_titulo(),
-        },
-    )
+def cartao(
+    nome: str,
+    posicao: Posicao,
+    ordem: int,
+    medida: Medida,
+    rotulo: str,
+    *,
+    destaque: bool = False,
+) -> Json:
+    """Indicador. Com `destaque`, é o número que a página lidera: um só por página."""
+    corpo: Json = {
+        "visualType": "card",
+        "query": {"queryState": {"Values": _papel((medida, rotulo))}},
+        "visualContainerObjects": _sem_titulo(),
+    }
+    if destaque:
+        corpo["objects"] = {"labels": [{"properties": {"fontSize": literal(36)}}]}
+    return _visual(nome, posicao, ordem, corpo)
 
 
 def barras(
@@ -189,12 +196,8 @@ def barras(
     decrescente: bool = True,
     n_maiores: int | None = None,
     rotulos: bool = True,
-    cor_das_barras: str | None = None,
 ) -> Json:
-    """Barras (horizontais) ou colunas (verticais).
-
-    `cor_das_barras` só vale para uma única medida; com várias, as cores vêm do tema.
-    """
+    """Barras (horizontais) ou colunas (verticais), na cor de série do tema."""
     consulta: Json = {"queryState": {"Category": _papel(categoria), "Y": _papel(*valores)}}
     consulta["sortDefinition"] = _ordenar(ordenar_por or valores[0], decrescente)
     filtros = None
@@ -204,8 +207,6 @@ def barras(
         "labels": [{"properties": {"show": literal(rotulos)}}],
         "legend": [{"properties": {"show": literal(len(valores) > 1)}}],
     }
-    if cor_das_barras and len(valores) == 1:
-        objetos["dataPoint"] = [{"properties": {"fill": cor(cor_das_barras)}}]
     return _visual(
         nome,
         posicao,
@@ -217,6 +218,34 @@ def barras(
             "visualContainerObjects": _titulo(titulo),
         },
         filtros,
+    )
+
+
+def area(
+    nome: str,
+    posicao: Posicao,
+    ordem: int,
+    titulo: str,
+    tempo: Coluna,
+    medida: Medida,
+) -> Json:
+    """Evolução no tempo de uma medida: linha com preenchimento leve, sem rótulo por ponto."""
+    return _visual(
+        nome,
+        posicao,
+        ordem,
+        {
+            "visualType": "areaChart",
+            "query": {
+                "queryState": {"Category": _papel(tempo), "Y": _papel(medida)},
+                "sortDefinition": _ordenar(tempo, decrescente=False),
+            },
+            "objects": {
+                "labels": [{"properties": {"show": literal(False)}}],
+                "legend": [{"properties": {"show": literal(False)}}],
+            },
+            "visualContainerObjects": _titulo(titulo),
+        },
     )
 
 
@@ -306,6 +335,16 @@ def texto(
             | {
                 "background": [{"properties": {"show": literal(False)}}],
                 "border": [{"properties": {"show": literal(False)}}],
+                "padding": [
+                    {
+                        "properties": {
+                            "top": literal(0),
+                            "bottom": literal(0),
+                            "left": literal(0),
+                            "right": literal(0),
+                        }
+                    }
+                ],
             },
         },
     )

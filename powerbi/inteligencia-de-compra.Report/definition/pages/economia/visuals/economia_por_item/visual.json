@@ -3,10 +3,10 @@
   "name": "economia_por_item",
   "position": {
     "x": 24,
-    "y": 208,
+    "y": 212,
     "z": 20,
-    "height": 496,
-    "width": 520,
+    "height": 484,
+    "width": 500,
     "tabOrder": 20
   },
   "visual": {
@@ -93,23 +93,6 @@
             }
           }
         }
-      ],
-      "dataPoint": [
-        {
-          "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#15803D'"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       ]
     },
     "visualContainerObjects": {
@@ -126,7 +109,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'15 itens com maior economia defensável'"
+                  "Value": "'Os 15 itens com maior economia defensável'"
                 }
               }
             }

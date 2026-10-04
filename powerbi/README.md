@@ -9,6 +9,9 @@ partir de três fontes em texto, e conferido automaticamente contra o BigQuery.
 | [src/compras/painel/paginas.py](../src/compras/painel/paginas.py) | as 3 páginas: quais visuais, com quais campos, em que posição |
 | [src/compras/painel/tema.py](../src/compras/painel/tema.py) | cores, fontes e o estilo comum dos visuais |
 
+As decisões de design (hierarquia, cor, tipografia, escolha de cada visual) estão em
+[DESIGN.md](DESIGN.md).
+
 O modelo (tabelas, colunas e relacionamentos) fica em
 [inteligencia-de-compra.SemanticModel/definition](inteligencia-de-compra.SemanticModel/definition),
 em TMDL, o formato de texto do Power BI.
@@ -74,6 +77,7 @@ O passo 4 sai com código 1 se qualquer valor divergir.
 | Cada arquivo gerado segue o esquema JSON publicado pela Microsoft | `tests/test_painel.py` + `tests/schemas/` | sim |
 | Todo campo usado num visual existe no modelo | `tests/test_painel.py` | sim |
 | Visuais cabem na página e não se sobrepõem | `tests/test_painel.py` | sim |
+| Cada página tem um único número em destaque; todo gráfico tem uma série só | `tests/test_painel.py` | sim |
 | Gerar duas vezes dá o mesmo resultado; visual antigo é removido | `tests/test_painel.py` | sim |
 | O modelo TMDL carrega na biblioteca da Microsoft | ao abrir no Power BI Desktop | não |
 | As medidas DAX dão os mesmos números que o SQL no BigQuery | `scripts/conferir.ps1` | não |
@@ -119,4 +123,4 @@ código.
   abre deixa os dois esperando um pelo outro; por isso `abrir.ps1` espera a página aparecer.
 - **O formato PBIR muda entre versões.** Os esquemas usados estão fixados em versões de 2025
   e copiados em `tests/schemas/`. Testado no Power BI Desktop 2.158 (setembro de 2026).
-- **Tipos de visual cobertos:** cartão, barras, colunas, tabela, segmentação e caixa de texto.
+- **Tipos de visual cobertos:** cartão, barras, colunas, área, tabela, segmentação e caixa de texto.

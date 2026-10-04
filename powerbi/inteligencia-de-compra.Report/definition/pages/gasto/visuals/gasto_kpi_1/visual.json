@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "gasto_kpi_1",
   "position": {
-    "x": 273.6,
-    "y": 92,
-    "z": 11,
-    "height": 100,
-    "width": 233.6,
-    "tabOrder": 11
+    "x": 576.0,
+    "y": 100,
+    "z": 12,
+    "height": 96,
+    "width": 216.0,
+    "tabOrder": 12
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Itens Comprados"
+                  "Property": "Fornecedores"
                 }
               },
-              "queryRef": "Medidas.Itens Comprados",
-              "displayName": "Itens comprados"
+              "queryRef": "Medidas.Fornecedores",
+              "displayName": "Fornecedores"
             }
           ]
         }

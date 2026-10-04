@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "economia_kpi_1",
   "position": {
-    "x": 336.0,
-    "y": 92,
-    "z": 11,
-    "height": 100,
-    "width": 296.0,
-    "tabOrder": 11
+    "x": 653.3333333333333,
+    "y": 100,
+    "z": 12,
+    "height": 96,
+    "width": 293.3333333333333,
+    "tabOrder": 12
   },
   "visual": {
     "visualType": "card",

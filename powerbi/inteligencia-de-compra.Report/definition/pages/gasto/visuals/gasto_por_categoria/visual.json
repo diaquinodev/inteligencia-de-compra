@@ -3,10 +3,10 @@
   "name": "gasto_por_categoria",
   "position": {
     "x": 24,
-    "y": 208,
+    "y": 212,
     "z": 20,
-    "height": 212,
-    "width": 400,
+    "height": 196,
+    "width": 384,
     "tabOrder": 20
   },
   "visual": {

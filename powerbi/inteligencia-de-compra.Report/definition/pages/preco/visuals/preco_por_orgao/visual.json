@@ -3,9 +3,9 @@
   "name": "preco_por_orgao",
   "position": {
     "x": 872,
-    "y": 424,
+    "y": 404,
     "z": 22,
-    "height": 280,
+    "height": 292,
     "width": 384,
     "tabOrder": 22
   },
@@ -93,23 +93,6 @@
             }
           }
         }
-      ],
-      "dataPoint": [
-        {
-          "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#B45309'"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       ]
     },
     "visualContainerObjects": {
@@ -126,7 +109,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'10 órgãos com maior gasto acima do P75'"
+                  "Value": "'Os 8 órgãos com maior gasto acima do P75'"
                 }
               }
             }
@@ -200,7 +183,7 @@
                         }
                       }
                     ],
-                    "Top": 10
+                    "Top": 8
                   }
                 }
               },
