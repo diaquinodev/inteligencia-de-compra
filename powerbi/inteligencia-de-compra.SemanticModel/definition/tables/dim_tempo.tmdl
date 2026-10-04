@@ -1,0 +1,75 @@
+table dim_tempo
+	lineageTag: e6dbca85-a361-4750-a7a0-3c7bdfa2aba5
+	dataCategory: Time
+
+	column data
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 60713ab9-f4a3-43ad-8c58-9bf818e9d42f
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 3c601871-f1ba-46a5-b139-80e7528cf18b
+		summarizeBy: sum
+		sourceColumn: ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column trimestre
+		dataType: int64
+		formatString: 0
+		lineageTag: 6c83d506-a842-41eb-8a1c-764a3e9095ae
+		summarizeBy: sum
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: int64
+		formatString: 0
+		lineageTag: edf5316d-372b-4eb4-b968-11e70df28983
+		summarizeBy: sum
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano_mes
+		dataType: string
+		lineageTag: 5208ffbe-95ff-410c-b4fb-6e0e6b595cb9
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column inicio_do_mes
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7a27400d-18b0-480f-b2e5-492a669d7908
+		summarizeBy: none
+		sourceColumn: inicio_do_mes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition dim_tempo = m
+		mode: import
+		source =
+				let
+				    Fonte = GoogleBigQuery.Database([Implementation="2.0"]),
+				    #"inteligencia-de-compra_Database" = Fonte{[Name="inteligencia-de-compra",Kind="Database"]}[Data],
+				    compras_Schema = #"inteligencia-de-compra_Database"{[Name="compras",Kind="Schema"]}[Data],
+				    dim_tempo_Table = compras_Schema{[Name="dim_tempo",Kind="Table"]}[Data]
+				in
+				    dim_tempo_Table
+
+	annotation PBI_ResultType = Table
+

@@ -6,3 +6,11 @@ __pycache__/
 .ruff_cache/
 .env
 *.pbix.bak
+
+# Power BI: cache de dados e configurações locais
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+# bibliotecas baixadas pelos scripts do painel
+powerbi/scripts/.bibliotecas/
+# painel antigo montado à mão, substituído pelo projeto gerado
+powerbi/*.pbix

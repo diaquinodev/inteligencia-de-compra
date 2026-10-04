@@ -1,0 +1,167 @@
+{
+  "name": "InteligenciaDeCompra",
+  "dataColors": [
+    "#1D4ED8",
+    "#15803D",
+    "#B45309",
+    "#7C3AED",
+    "#0E7490",
+    "#BE123C",
+    "#9CA3AF",
+    "#4D7C0F"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#111827",
+  "tableAccent": "#1D4ED8",
+  "textClasses": {
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 26,
+      "color": "#111827"
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 11,
+      "color": "#111827"
+    },
+    "header": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 10,
+      "color": "#111827"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 9,
+      "color": "#6B7280"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#E5E7EB"
+              }
+            },
+            "radius": 8
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ],
+        "title": [
+          {
+            "fontFamily": "Segoe UI Semibold",
+            "fontSize": 11,
+            "fontColor": {
+              "solid": {
+                "color": "#111827"
+              }
+            }
+          }
+        ],
+        "padding": [
+          {
+            "top": 8,
+            "bottom": 8,
+            "left": 12,
+            "right": 12
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F3F4F6"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "outspace": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F3F4F6"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    },
+    "card": {
+      "*": {
+        "labels": [
+          {
+            "fontSize": 24,
+            "fontFamily": "Segoe UI Semibold",
+            "color": {
+              "solid": {
+                "color": "#111827"
+              }
+            }
+          }
+        ],
+        "categoryLabels": [
+          {
+            "show": true,
+            "fontSize": 10,
+            "fontFamily": "Segoe UI",
+            "color": {
+              "solid": {
+                "color": "#6B7280"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "grid": [
+          {
+            "gridVertical": false,
+            "rowPadding": 4
+          }
+        ],
+        "columnHeaders": [
+          {
+            "fontFamily": "Segoe UI Semibold",
+            "fontSize": 9
+          }
+        ],
+        "values": [
+          {
+            "fontSize": 9
+          }
+        ],
+        "total": [
+          {
+            "totals": false
+          }
+        ]
+      }
+    }
+  }
+}
