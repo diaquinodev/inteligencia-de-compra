@@ -1,8 +1,8 @@
 # Medidas DAX
 
-O arquivo `.pbix` é binário e não aparece em revisão de código. As medidas ficam em texto em
-[medidas.dax](medidas.dax), que é a fonte da verdade: 24 medidas e duas consultas de
-conferência, prontas para colar na exibição de consulta DAX do Power BI Desktop.
+As medidas ficam em texto em [medidas.dax](medidas.dax), a fonte única: 30 medidas e duas
+consultas de conferência. O gerador do painel lê esse arquivo e cria a tabela `Medidas` do
+modelo; o fluxo completo está em [README.md](README.md).
 
 ## Grupos de medidas
 
@@ -10,11 +10,15 @@ conferência, prontas para colar na exibição de consulta DAX do Power BI Deskt
 |---|---|
 | Base | Gasto Total, Itens Comprados, Fornecedores, Órgãos, Ticket Médio por Item |
 | Onde está o gasto | Participação no Gasto, Posição do Fornecedor, Participação Acumulada, Classe ABC, HHI |
-| Onde se paga caro | Gasto Comparável, Compras Comparáveis, Preço Mediano, Compras Acima do P75, % Compras Acima do P75, Itens com Preço Suspeito |
+| Onde se paga caro | Gasto Comparável, Compras Comparáveis, Preço Mediano, Preço P25, Preço P75, Menor Preço, Maior Preço, Dispersão de Preço, Compras Acima do P75, Gasto Acima do P75, Ágio Médio sobre o P75, Itens com Preço Suspeito |
 | Quanto dá para economizar | Economia Teto, Economia Conservadora, Economia Defensável, Gasto Homogêneo, % Economia Defensável |
 | Tempo | Gasto Mês Anterior, Variação Mensal, Gasto Acumulado no Ano |
 
-## Duas decisões que valem explicação
+## Três decisões que valem explicação
+
+- **Não existe a medida "% de compras acima do P75".** Ela daria perto de 25% para qualquer
+  item, por definição de terceiro quartil. O que informa é quanto essas compras custaram
+  (Gasto Acima do P75) e quanto pagaram a mais que o P75 (Ágio Médio sobre o P75).
 
 - **`REMOVEFILTERS ( dim_fornecedor )` no denominador, e não `ALLSELECTED`.** Com um filtro
   "N superiores" no visual, `ALLSELECTED` calcula a participação só entre os N fornecedores
@@ -30,8 +34,9 @@ visual só com `nome` junta matriz e filiais e deixa a Posição em branco.
 
 ## Conferência
 
-As medidas foram executadas no modelo e comparadas com as tabelas do BigQuery em
-04/10/2026. Sem filtro:
+`scripts/conferir.ps1` executa as medidas no painel aberto e compara com os valores que
+`python -m compras esperado` calcula no BigQuery. Resultado em 04/10/2026: 23 de 23 valores
+conferem. Sem filtro:
 
 | Medida | Power BI | Consulta de origem no BigQuery |
 |---|---|---|
@@ -46,6 +51,9 @@ As medidas foram executadas no modelo e comparadas com as tabelas do BigQuery em
 | Economia Conservadora | 1.074.849.587,12 | soma de `economia_conservadora` |
 | Economia Defensável | 263.690.362,49 | soma de `economia_homogenea` |
 | % Economia Defensável | 6,80% | `economia_homogenea / gasto_homogeneo` |
+| Compras Acima do P75 | 66.582 | `COUNTIF(comparavel AND valor_unitario > preco_p75)` |
+| Gasto Acima do P75 | 2.899.198.542,61 | soma de `valor_total` dessas compras |
+| Ágio Médio sobre o P75 | 58,92% | economia conservadora ÷ (gasto acima do P75 − economia conservadora) |
 
 Por categoria:
 

@@ -1,0 +1,74 @@
+table dim_fornecedor
+	lineageTag: 4abddad5-a252-476a-9f86-07e1a5e58aa7
+
+	column sk_fornecedor
+		dataType: int64
+		formatString: 0
+		lineageTag: d8773e17-94a7-462e-8f98-e32a1c4a9f2a
+		summarizeBy: none
+		sourceColumn: sk_fornecedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column documento
+		dataType: string
+		lineageTag: 72b9d1ec-8999-4954-b055-b6b58944c8ca
+		summarizeBy: none
+		sourceColumn: documento
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_documento
+		dataType: string
+		lineageTag: f15fef43-65c7-4ce8-b7c3-f9a1996cd6b2
+		summarizeBy: none
+		sourceColumn: tipo_documento
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		lineageTag: 4f67306e-60f2-4198-84cf-8308d9aeeee7
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column sigla_uf
+		dataType: string
+		lineageTag: 982b0fd6-1748-48f6-a64d-a4b259d708b8
+		summarizeBy: none
+		sourceColumn: sigla_uf
+
+		annotation SummarizationSetBy = Automatic
+
+	column porte
+		dataType: string
+		lineageTag: de578e07-d9ad-4932-bb52-76c46a99b8b8
+		summarizeBy: none
+		sourceColumn: porte
+
+		annotation SummarizationSetBy = Automatic
+
+	column tem_cadastro
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b0a6afcd-67d3-4316-bc22-c45c1a6d61d4
+		summarizeBy: none
+		sourceColumn: tem_cadastro
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_fornecedor = m
+		mode: import
+		source =
+				let
+				    Fonte = GoogleBigQuery.Database([Implementation="2.0"]),
+				    #"inteligencia-de-compra_Database" = Fonte{[Name="inteligencia-de-compra",Kind="Database"]}[Data],
+				    compras_Schema = #"inteligencia-de-compra_Database"{[Name="compras",Kind="Schema"]}[Data],
+				    dim_fornecedor_Table = compras_Schema{[Name="dim_fornecedor",Kind="Table"]}[Data]
+				in
+				    dim_fornecedor_Table
+
+	annotation PBI_ResultType = Table
+

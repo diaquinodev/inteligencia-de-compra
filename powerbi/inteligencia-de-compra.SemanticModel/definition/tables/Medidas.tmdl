@@ -1,0 +1,212 @@
+table Medidas
+
+	measure 'Gasto Total' =
+			SUM ( fato_item_compra[valor_total] )
+		formatString: \R\$ #,0
+		displayFolder: Base
+
+	measure 'Itens Comprados' =
+			COUNTROWS ( fato_item_compra )
+		formatString: #,0
+		displayFolder: Base
+
+	measure 'Fornecedores' =
+			DISTINCTCOUNT ( fato_item_compra[sk_fornecedor] )
+		formatString: #,0
+		displayFolder: Base
+
+	measure 'Órgãos' =
+			DISTINCTCOUNT ( fato_item_compra[sk_orgao] )
+		formatString: #,0
+		displayFolder: Base
+
+	measure 'Ticket Médio por Item' =
+			DIVIDE ( [Gasto Total], [Itens Comprados] )
+		formatString: \R\$ #,0
+		displayFolder: Base
+
+	/// As medidas de participação comparam o fornecedor com TODOS os fornecedores do contexto (categoria, período, órgão). REMOVEFILTERS, e não ALLSELECTED: com um filtro "N superiores" no visual, ALLSELECTED faria a conta só entre os N que aparecem. Use a coluna dim_fornecedor[documento] no visual: o grão é o CNPJ, como no SQL.
+	measure 'Participação no Gasto' =
+			DIVIDE ( [Gasto Total], CALCULATE ( [Gasto Total], REMOVEFILTERS ( dim_fornecedor ) ) )
+		formatString: 0.0%
+		displayFolder: Pergunta 1: onde está o gasto
+
+	measure 'Posição do Fornecedor' =
+			IF (
+			    HASONEVALUE ( dim_fornecedor[sk_fornecedor] ),
+			    RANKX ( ALL ( dim_fornecedor ), [Gasto Total],, DESC, DENSE )
+			)
+		formatString: #,0
+		displayFolder: Pergunta 1: onde está o gasto
+
+	/// O gasto de cada fornecedor é calculado uma vez e guardado na variável; somar os que gastaram tanto ou mais que o atual dá o acumulado. Recalcular o gasto dentro do filtro faria uma conta por par de fornecedores e travaria o painel.
+	measure 'Participação Acumulada' =
+			VAR GastoAtual = [Gasto Total]
+			VAR GastoPorFornecedor =
+			    CALCULATETABLE (
+			        ADDCOLUMNS ( VALUES ( dim_fornecedor[sk_fornecedor] ), "@Gasto", [Gasto Total] ),
+			        REMOVEFILTERS ( dim_fornecedor )
+			    )
+			RETURN
+			    DIVIDE (
+			        SUMX ( FILTER ( GastoPorFornecedor, [@Gasto] >= GastoAtual ), [@Gasto] ),
+			        SUMX ( GastoPorFornecedor, [@Gasto] )
+			    )
+		formatString: 0.0%
+		displayFolder: Pergunta 1: onde está o gasto
+
+	measure 'Classe ABC' =
+			SWITCH (
+			    TRUE (),
+			    [Participação Acumulada] - [Participação no Gasto] < 0.80, "A",
+			    [Participação Acumulada] - [Participação no Gasto] < 0.95, "B",
+			    "C"
+			)
+		displayFolder: Pergunta 1: onde está o gasto
+
+	measure 'HHI' =
+			VAR GastoDoContexto = CALCULATE ( [Gasto Total], REMOVEFILTERS ( dim_fornecedor ) )
+			RETURN
+			    SUMX (
+			        VALUES ( dim_fornecedor[sk_fornecedor] ),
+			        ( DIVIDE ( [Gasto Total], GastoDoContexto ) * 100 ) ^ 2
+			    )
+		formatString: #,0
+		displayFolder: Pergunta 1: onde está o gasto
+
+	measure 'Gasto Comparável' =
+			CALCULATE ( [Gasto Total], fato_item_compra[comparavel] = TRUE () )
+		formatString: \R\$ #,0
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Compras Comparáveis' =
+			CALCULATE ( [Itens Comprados], fato_item_compra[comparavel] = TRUE () )
+		formatString: #,0
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Preço Mediano' =
+			CALCULATE (
+			    MEDIAN ( fato_item_compra[valor_unitario] ),
+			    fato_item_compra[comparavel] = TRUE ()
+			)
+		formatString: \R\$ #,0.00
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Compras Acima do P75' =
+			COUNTROWS (
+			    FILTER (
+			        fato_item_compra,
+			        fato_item_compra[comparavel] = TRUE ()
+			            && fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
+			    )
+			)
+		formatString: #,0
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Gasto Acima do P75' =
+			SUMX (
+			    FILTER (
+			        fato_item_compra,
+			        fato_item_compra[comparavel] = TRUE ()
+			            && fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
+			    ),
+			    fato_item_compra[valor_total]
+			)
+		formatString: \R\$ #,0
+		displayFolder: Pergunta 2: onde se paga caro
+
+	/// Quanto as compras acima do P75 pagaram a mais, em relação ao que custariam no P75.
+	measure 'Ágio Médio sobre o P75' =
+			DIVIDE ( [Economia Conservadora], [Gasto Acima do P75] - [Economia Conservadora] )
+		formatString: 0.0%
+		displayFolder: Pergunta 2: onde se paga caro
+
+	/// P25, P75, menor e maior preço só fazem sentido com um item e uma unidade no contexto.
+	measure 'Preço P25' =
+			CALCULATE ( MIN ( fato_item_compra[preco_p25] ), fato_item_compra[comparavel] = TRUE () )
+		formatString: \R\$ #,0.00
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Preço P75' =
+			CALCULATE ( MIN ( fato_item_compra[preco_p75] ), fato_item_compra[comparavel] = TRUE () )
+		formatString: \R\$ #,0.00
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Menor Preço' =
+			CALCULATE ( MIN ( fato_item_compra[valor_unitario] ), fato_item_compra[comparavel] = TRUE () )
+		formatString: \R\$ #,0.00
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Maior Preço' =
+			CALCULATE ( MAX ( fato_item_compra[valor_unitario] ), fato_item_compra[comparavel] = TRUE () )
+		formatString: \R\$ #,0.00
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Dispersão de Preço' =
+			DIVIDE ( [Preço P75], [Preço P25] )
+		formatString: #,0.00
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Itens com Preço Suspeito' =
+			CALCULATE ( [Itens Comprados], fato_item_compra[preco_suspeito] = TRUE () )
+		formatString: #,0
+		displayFolder: Pergunta 2: onde se paga caro
+
+	measure 'Economia Teto' =
+			SUMX (
+			    FILTER ( fato_item_compra, fato_item_compra[comparavel] = TRUE () ),
+			    MAX ( fato_item_compra[valor_unitario] - fato_item_compra[preco_mediano], 0 )
+			        * fato_item_compra[quantidade]
+			)
+		formatString: \R\$ #,0
+		displayFolder: Pergunta 3: quanto dá para economizar
+
+	measure 'Economia Conservadora' =
+			SUMX (
+			    FILTER ( fato_item_compra, fato_item_compra[comparavel] = TRUE () ),
+			    MAX ( fato_item_compra[valor_unitario] - fato_item_compra[preco_p75], 0 )
+			        * fato_item_compra[quantidade]
+			)
+		formatString: \R\$ #,0
+		displayFolder: Pergunta 3: quanto dá para economizar
+
+	measure 'Economia Defensável' =
+			CALCULATE ( [Economia Conservadora], fato_item_compra[preco_homogeneo] = TRUE () )
+		formatString: \R\$ #,0
+		displayFolder: Pergunta 3: quanto dá para economizar
+
+	measure 'Gasto Homogêneo' =
+			CALCULATE ( [Gasto Comparável], fato_item_compra[preco_homogeneo] = TRUE () )
+		formatString: \R\$ #,0
+		displayFolder: Pergunta 3: quanto dá para economizar
+
+	measure '% Economia Defensável' =
+			DIVIDE ( [Economia Defensável], [Gasto Homogêneo] )
+		formatString: 0.0%
+		displayFolder: Pergunta 3: quanto dá para economizar
+
+	measure 'Gasto Mês Anterior' =
+			CALCULATE ( [Gasto Total], DATEADD ( dim_tempo[data], -1, MONTH ) )
+		formatString: \R\$ #,0
+		displayFolder: Tempo
+
+	measure 'Variação Mensal' =
+			DIVIDE ( [Gasto Total] - [Gasto Mês Anterior], [Gasto Mês Anterior] )
+		formatString: 0.0%
+		displayFolder: Tempo
+
+	measure 'Gasto Acumulado no Ano' =
+			TOTALYTD ( [Gasto Total], dim_tempo[data] )
+		formatString: \R\$ #,0
+		displayFolder: Tempo
+
+	column Coluna
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: Coluna
+
+	partition Medidas = m
+		mode: import
+		source = #table(type table [Coluna = text], {})
+

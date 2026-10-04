@@ -1,7 +1,10 @@
-// Medidas do painel, para colar na exibição de consulta DAX do Power BI Desktop.
-// 1. Crie antes uma tabela vazia chamada Medidas (Página Inicial > Inserir dados).
-// 2. Cole este arquivo inteiro, clique em Executar e confira o resultado com powerbi/medidas.md.
-// 3. Clique em "Atualizar modelo com alterações" para gravar as medidas no modelo.
+// Medidas do painel: fonte única.
+// - `python -m compras painel` lê o bloco DEFINE e gera a tabela Medidas do modelo.
+// - `powerbi\scripts\conferir.ps1` roda as consultas EVALUATE no painel aberto e compara o
+//   resultado com o BigQuery.
+// O arquivo também roda como está na exibição de consulta DAX do Power BI Desktop.
+// Comentário `// ---------- Título ----------` vira a pasta das medidas abaixo dele;
+// os outros comentários viram a descrição da medida seguinte.
 
 DEFINE
     // ---------- Base ----------
@@ -71,8 +74,28 @@ DEFINE
                     && fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
             )
         )
-    MEASURE Medidas[% Compras Acima do P75] =
-        DIVIDE ( [Compras Acima do P75], [Compras Comparáveis] )
+    MEASURE Medidas[Gasto Acima do P75] =
+        SUMX (
+            FILTER (
+                fato_item_compra,
+                fato_item_compra[comparavel] = TRUE ()
+                    && fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
+            ),
+            fato_item_compra[valor_total]
+        )
+    // Quanto as compras acima do P75 pagaram a mais, em relação ao que custariam no P75.
+    MEASURE Medidas[Ágio Médio sobre o P75] =
+        DIVIDE ( [Economia Conservadora], [Gasto Acima do P75] - [Economia Conservadora] )
+    // P25, P75, menor e maior preço só fazem sentido com um item e uma unidade no contexto.
+    MEASURE Medidas[Preço P25] =
+        CALCULATE ( MIN ( fato_item_compra[preco_p25] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Preço P75] =
+        CALCULATE ( MIN ( fato_item_compra[preco_p75] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Menor Preço] =
+        CALCULATE ( MIN ( fato_item_compra[valor_unitario] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Maior Preço] =
+        CALCULATE ( MAX ( fato_item_compra[valor_unitario] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Dispersão de Preço] = DIVIDE ( [Preço P75], [Preço P25] )
     MEASURE Medidas[Itens com Preço Suspeito] =
         CALCULATE ( [Itens Comprados], fato_item_compra[preco_suspeito] = TRUE () )
 
@@ -116,7 +139,10 @@ ROW (
     "Economia Teto", [Economia Teto],
     "Economia Conservadora", [Economia Conservadora],
     "Economia Defensável", [Economia Defensável],
-    "% Economia Defensável", [% Economia Defensável]
+    "% Economia Defensável", [% Economia Defensável],
+    "Compras Acima do P75", [Compras Acima do P75],
+    "Gasto Acima do P75", [Gasto Acima do P75],
+    "Ágio Médio sobre o P75", [Ágio Médio sobre o P75]
 )
 
 // Conferência por categoria.

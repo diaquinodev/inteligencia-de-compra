@@ -1,0 +1,190 @@
+table fato_item_compra
+	lineageTag: d88f3ea6-2ac2-4a96-b986-35e8d6f84916
+
+	column id_compra_item
+		dataType: string
+		lineageTag: f9a1db81-2824-4dfb-858a-9b05c4708051
+		summarizeBy: none
+		sourceColumn: id_compra_item
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_compra
+		dataType: string
+		lineageTag: a245d71e-6ffb-4a3f-86d6-f8821098713a
+		summarizeBy: none
+		sourceColumn: id_compra
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_item
+		dataType: int64
+		formatString: 0
+		lineageTag: 474b9d3b-7041-4593-bc49-84c251598225
+		summarizeBy: none
+		sourceColumn: sk_item
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_fornecedor
+		dataType: int64
+		formatString: 0
+		lineageTag: cdfaa5c6-f430-41c1-9bd4-cf41fcf23e12
+		summarizeBy: none
+		sourceColumn: sk_fornecedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_orgao
+		dataType: int64
+		formatString: 0
+		lineageTag: efa9551c-7cb0-4f2a-b4d6-aeec1cfa10f0
+		summarizeBy: none
+		sourceColumn: sk_orgao
+
+		annotation SummarizationSetBy = Automatic
+
+	column data
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2ccca0e4-4505-4493-affa-5a7a30124b77
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column sigla_uf
+		dataType: string
+		lineageTag: bf1aeeb6-b05d-4c4b-b495-b8b1d48a7d14
+		summarizeBy: none
+		sourceColumn: sigla_uf
+
+		annotation SummarizationSetBy = Automatic
+
+	column modalidade
+		dataType: string
+		lineageTag: aa64d07a-5769-4ad4-afd3-91d5bdc45e73
+		summarizeBy: none
+		sourceColumn: modalidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column unidade_medida
+		dataType: string
+		lineageTag: 0607689d-cd6a-4fee-ac1e-ff09ccc73eb9
+		summarizeBy: none
+		sourceColumn: unidade_medida
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantidade
+		dataType: double
+		lineageTag: 5b44f8bc-0b69-4c68-8b7d-46d7b56784ed
+		summarizeBy: sum
+		sourceColumn: quantidade
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_unitario
+		dataType: double
+		lineageTag: 9acaef0f-a98e-424f-bd64-dc785052e280
+		summarizeBy: sum
+		sourceColumn: valor_unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_total
+		dataType: double
+		lineageTag: 94b6ec8d-0a7d-4e4b-acba-dc2dc7c1c8ea
+		summarizeBy: sum
+		sourceColumn: valor_total
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column preco_suspeito
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: d3c18982-3efb-4733-a9b3-cdba2c9c0b4d
+		summarizeBy: none
+		sourceColumn: preco_suspeito
+
+		annotation SummarizationSetBy = Automatic
+
+	column compras_comparaveis
+		dataType: int64
+		formatString: 0
+		lineageTag: 22fd84f5-a622-4784-8406-fee9f208dcc7
+		summarizeBy: sum
+		sourceColumn: compras_comparaveis
+
+		annotation SummarizationSetBy = Automatic
+
+	column preco_p25
+		dataType: double
+		lineageTag: 1c9a9012-a82d-4431-8b09-b9a45114e19b
+		summarizeBy: sum
+		sourceColumn: preco_p25
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column preco_mediano
+		dataType: double
+		lineageTag: cdfd33a9-5aa0-4365-afeb-1f946282ad5c
+		summarizeBy: sum
+		sourceColumn: preco_mediano
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column preco_p75
+		dataType: double
+		lineageTag: 45bca3ed-e4a6-47fa-9664-8c1d3b4399f1
+		summarizeBy: sum
+		sourceColumn: preco_p75
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column preco_homogeneo
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 390e3cb5-5854-48e5-bdd5-1e17859425d9
+		summarizeBy: none
+		sourceColumn: preco_homogeneo
+
+		annotation SummarizationSetBy = Automatic
+
+	column comparavel
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ee2c310c-eb52-4907-87a7-a8239fb1da1b
+		summarizeBy: none
+		sourceColumn: comparavel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_item_compra = m
+		mode: import
+		source =
+				let
+				    Fonte = GoogleBigQuery.Database([Implementation="2.0"]),
+				    #"inteligencia-de-compra_Database" = Fonte{[Name="inteligencia-de-compra",Kind="Database"]}[Data],
+				    compras_Schema = #"inteligencia-de-compra_Database"{[Name="compras",Kind="Schema"]}[Data],
+				    fato_item_compra_Table = compras_Schema{[Name="fato_item_compra",Kind="Table"]}[Data]
+				in
+				    fato_item_compra_Table
+
+	annotation PBI_ResultType = Table
+
