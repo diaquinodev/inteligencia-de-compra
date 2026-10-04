@@ -1,161 +1,77 @@
 # Medidas DAX
 
-O arquivo `.pbix` é binário e não aparece em revisão de código. As medidas ficam aqui, em
-texto, como fonte da verdade. Crie uma tabela vazia chamada `Medidas` e cole cada uma.
+As medidas ficam em texto em [medidas.dax](medidas.dax), a fonte única: 30 medidas e duas
+consultas de conferência. O gerador do painel lê esse arquivo e cria a tabela `Medidas` do
+modelo; o fluxo completo está em [README.md](README.md).
 
-## Base
+## Grupos de medidas
 
-```dax
-Gasto Total = SUM ( fato_item_compra[valor_total] )
+| Grupo | Medidas |
+|---|---|
+| Base | Gasto Total, Itens Comprados, Fornecedores, Órgãos, Ticket Médio por Item |
+| Onde está o gasto | Participação no Gasto, Posição do Fornecedor, Participação Acumulada, Classe ABC, HHI |
+| Onde se paga caro | Gasto Comparável, Compras Comparáveis, Preço Mediano, Preço P25, Preço P75, Menor Preço, Maior Preço, Dispersão de Preço, Compras Acima do P75, Gasto Acima do P75, Ágio Médio sobre o P75, Itens com Preço Suspeito |
+| Quanto dá para economizar | Economia Teto, Economia Conservadora, Economia Defensável, Gasto Homogêneo, % Economia Defensável |
+| Tempo | Gasto Mês Anterior, Variação Mensal, Gasto Acumulado no Ano |
 
-Itens Comprados = COUNTROWS ( fato_item_compra )
+## Três decisões que valem explicação
 
-Fornecedores = DISTINCTCOUNT ( fato_item_compra[sk_fornecedor] )
+- **Não existe a medida "% de compras acima do P75".** Ela daria perto de 25% para qualquer
+  item, por definição de terceiro quartil. O que informa é quanto essas compras custaram
+  (Gasto Acima do P75) e quanto pagaram a mais que o P75 (Ágio Médio sobre o P75).
 
-Órgãos = DISTINCTCOUNT ( fato_item_compra[sk_orgao] )
+- **`REMOVEFILTERS ( dim_fornecedor )` no denominador, e não `ALLSELECTED`.** Com um filtro
+  "N superiores" no visual, `ALLSELECTED` calcula a participação só entre os N fornecedores
+  que aparecem: os 5 maiores somariam 100%. `REMOVEFILTERS` compara com todos os
+  fornecedores do contexto (categoria, período, órgão).
+- **Participação Acumulada guarda o gasto por fornecedor numa variável.** A primeira versão
+  recalculava o gasto de todos os fornecedores para cada fornecedor (6.913 × 6.913 contas em
+  informática) e não terminou em 5 minutos. Com a tabela calculada uma vez, a mesma consulta
+  leva segundos.
 
-Ticket Médio por Item = DIVIDE ( [Gasto Total], [Itens Comprados] )
-```
+O grão das medidas de fornecedor é o CNPJ (`dim_fornecedor[documento]`), o mesmo do SQL. Um
+visual só com `nome` junta matriz e filiais e deixa a Posição em branco.
 
-## Pergunta 1 — onde está o gasto
+## Conferência
 
-```dax
-Participação no Gasto =
-DIVIDE (
-    [Gasto Total],
-    CALCULATE ( [Gasto Total], ALLSELECTED ( dim_fornecedor ) )
-)
+`scripts/conferir.ps1` executa as medidas no painel aberto e compara com os valores que
+`python -m compras esperado` calcula no BigQuery. Resultado em 04/10/2026: 23 de 23 valores
+conferem. Sem filtro:
 
-Posição do Fornecedor =
-IF (
-    HASONEVALUE ( dim_fornecedor[sk_fornecedor] ),
-    RANKX ( ALLSELECTED ( dim_fornecedor ), [Gasto Total],, DESC, DENSE )
-)
-
-Participação Acumulada =
-VAR GastoAtual = [Gasto Total]
-RETURN
-    DIVIDE (
-        SUMX (
-            FILTER (
-                ALLSELECTED ( dim_fornecedor ),
-                [Gasto Total] >= GastoAtual
-            ),
-            [Gasto Total]
-        ),
-        CALCULATE ( [Gasto Total], ALLSELECTED ( dim_fornecedor ) )
-    )
-
-Classe ABC =
-SWITCH (
-    TRUE (),
-    [Participação Acumulada] - [Participação no Gasto] < 0.80, "A",
-    [Participação Acumulada] - [Participação no Gasto] < 0.95, "B",
-    "C"
-)
-
-HHI =
-SUMX (
-    VALUES ( dim_fornecedor[sk_fornecedor] ),
-    VAR Participacao =
-        DIVIDE ( [Gasto Total], CALCULATE ( [Gasto Total], ALLSELECTED ( dim_fornecedor ) ) )
-    RETURN
-        ( Participacao * 100 ) ^ 2
-)
-```
-
-## Pergunta 2 — onde se paga caro
-
-```dax
-Gasto Comparável =
-CALCULATE ( [Gasto Total], fato_item_compra[comparavel] = TRUE () )
-
-Compras Comparáveis =
-CALCULATE ( [Itens Comprados], fato_item_compra[comparavel] = TRUE () )
-
-Preço Mediano =
-CALCULATE (
-    MEDIAN ( fato_item_compra[valor_unitario] ),
-    fato_item_compra[comparavel] = TRUE ()
-)
-
-Compras Acima do P75 =
-CALCULATE (
-    [Itens Comprados],
-    fato_item_compra[comparavel] = TRUE (),
-    FILTER (
-        fato_item_compra,
-        fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
-    )
-)
-
-% Compras Acima do P75 = DIVIDE ( [Compras Acima do P75], [Compras Comparáveis] )
-
-Itens com Preço Suspeito =
-CALCULATE ( [Itens Comprados], fato_item_compra[preco_suspeito] = TRUE () )
-```
-
-## Pergunta 3 — quanto dá para economizar
-
-```dax
-Economia Teto =
-SUMX (
-    FILTER ( fato_item_compra, fato_item_compra[comparavel] = TRUE () ),
-    MAX ( fato_item_compra[valor_unitario] - fato_item_compra[preco_mediano], 0 )
-        * fato_item_compra[quantidade]
-)
-
-Economia Conservadora =
-SUMX (
-    FILTER ( fato_item_compra, fato_item_compra[comparavel] = TRUE () ),
-    MAX ( fato_item_compra[valor_unitario] - fato_item_compra[preco_p75], 0 )
-        * fato_item_compra[quantidade]
-)
-
-Economia Defensável =
-CALCULATE ( [Economia Conservadora], fato_item_compra[preco_homogeneo] = TRUE () )
-
-Gasto Homogêneo =
-CALCULATE ( [Gasto Comparável], fato_item_compra[preco_homogeneo] = TRUE () )
-
-% Economia Defensável = DIVIDE ( [Economia Defensável], [Gasto Homogêneo] )
-```
-
-## Tempo
-
-```dax
-Gasto Mês Anterior =
-CALCULATE ( [Gasto Total], DATEADD ( dim_tempo[data], -1, MONTH ) )
-
-Variação Mensal = DIVIDE ( [Gasto Total] - [Gasto Mês Anterior], [Gasto Mês Anterior] )
-
-Gasto Acumulado no Ano = TOTALYTD ( [Gasto Total], dim_tempo[data] )
-```
-
-## Conferência: os números que o painel precisa mostrar
-
-Sem nenhum filtro, as medidas devem bater com as consultas do repositório (03/10/2026):
-
-| Medida | Valor esperado | Consulta de origem |
+| Medida | Power BI | Consulta de origem no BigQuery |
 |---|---|---|
-| Gasto Total | R$ 15.805.333.119,66 | `SELECT SUM(valor_total) FROM fato_item_compra` |
+| Gasto Total | 15.805.333.119,66 | `SELECT SUM(valor_total) FROM fato_item_compra` |
 | Itens Comprados | 334.901 | `SELECT COUNT(*) FROM fato_item_compra` |
 | Fornecedores | 16.012 | `SELECT COUNT(*) FROM dim_fornecedor` |
 | Órgãos | 2.470 | `SELECT COUNT(*) FROM dim_orgao` |
 | Compras Comparáveis | 267.183 | `qualidade_resumo`, última linha |
-| Gasto Comparável | R$ 10.741,2 milhões | `qualidade_resumo`, última linha |
+| Gasto Comparável | 10.741.223.456,65 | `qualidade_resumo`, última linha |
 | Itens com Preço Suspeito | 11.702 | `qualidade_resumo` |
-| Economia Teto | R$ 2.269,8 milhões | soma de `mart_resumo_categoria.economia_teto` |
-| Economia Conservadora | R$ 1.074,9 milhões | soma de `economia_conservadora` |
-| Economia Defensável | R$ 263,7 milhões | soma de `economia_homogenea` |
+| Economia Teto | 2.269.801.345,61 | soma de `mart_resumo_categoria.economia_teto` |
+| Economia Conservadora | 1.074.849.587,12 | soma de `economia_conservadora` |
+| Economia Defensável | 263.690.362,49 | soma de `economia_homogenea` |
+| % Economia Defensável | 6,80% | `economia_homogenea / gasto_homogeneo` |
+| Compras Acima do P75 | 66.582 | `COUNTIF(comparavel AND valor_unitario > preco_p75)` |
+| Gasto Acima do P75 | 2.899.198.542,61 | soma de `valor_total` dessas compras |
+| Ágio Médio sobre o P75 | 58,92% | economia conservadora ÷ (gasto acima do P75 − economia conservadora) |
 
-Filtrando por categoria:
+Por categoria:
 
-| Categoria | Gasto Total (R$ mi) | Economia Defensável (R$ mi) | HHI |
+| Categoria | Gasto Total | Economia Defensável | HHI |
 |---|---|---|---|
-| Informática | 12.923,0 | 190,8 | 197 |
-| Escritório | 2.274,2 | 55,2 | 318 |
-| Limpeza | 608,2 | 17,7 | 45 |
+| Informática | 12.922.963.783,40 | 190.829.142,09 | 197,03 |
+| Escritório | 2.274.192.364,35 | 55.172.503,65 | 317,78 |
+| Limpeza | 608.176.971,91 | 17.688.716,75 | 44,90 |
 
-Se um número não bater, o erro está no painel (relacionamento, filtro ou medida), não nos
-dados: os totais do BigQuery são conferidos pelos testes de `sql/tests/`.
+Cinco maiores fornecedores de informática (iguais a `mart_gasto_fornecedor`):
+
+| Posição | Fornecedor | Gasto | Participação | Acumulada | Classe |
+|---|---|---|---|---|---|
+| 1 | Positivo Tecnologia S.A. | 989.979.438,72 | 7,66% | 7,66% | A |
+| 2 | Kona Indústria e Comércio Ltda | 570.900.000,00 | 4,42% | 12,08% | A |
+| 3 | Lenovo Tecnologia (Brasil) Limitada | 552.239.324,06 | 4,27% | 16,35% | A |
+| 4 | Lider Notebooks Comércio e Serviços Ltda | 536.639.541,70 | 4,15% | 20,50% | A |
+| 5 | Grupo Multilaser S.A. | 431.254.399,00 | 3,34% | 23,84% | A |
+
+Se um número do painel não bater com estes, o erro está no visual (campo, filtro ou
+relacionamento): os totais do BigQuery são conferidos pelos testes de `sql/tests/`.

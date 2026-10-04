@@ -1,0 +1,57 @@
+table dim_orgao
+	lineageTag: f59cfed1-abaf-4e6d-adfc-3a71a4bdb965
+
+	column sk_orgao
+		dataType: int64
+		formatString: 0
+		lineageTag: b4865fa7-ce9c-4569-b6d0-630420623202
+		summarizeBy: none
+		sourceColumn: sk_orgao
+
+		annotation SummarizationSetBy = Automatic
+
+	column cnpj_orgao
+		dataType: string
+		lineageTag: 360bed42-5370-4609-8f64-ea44fd1fc3df
+		summarizeBy: none
+		sourceColumn: cnpj_orgao
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_orgao
+		dataType: string
+		lineageTag: d8fe58b9-58b8-4f89-96d0-e8140b23009a
+		summarizeBy: none
+		sourceColumn: nome_orgao
+
+		annotation SummarizationSetBy = Automatic
+
+	column esfera
+		dataType: string
+		lineageTag: 834ad5da-0f0e-4e32-a7d5-9d4295fbf9e6
+		summarizeBy: none
+		sourceColumn: esfera
+
+		annotation SummarizationSetBy = Automatic
+
+	column poder
+		dataType: string
+		lineageTag: 84a5f8c9-9d3c-457c-9dc9-46772e6b1def
+		summarizeBy: none
+		sourceColumn: poder
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_orgao = m
+		mode: import
+		source =
+				let
+				    Fonte = GoogleBigQuery.Database([Implementation="2.0"]),
+				    #"inteligencia-de-compra_Database" = Fonte{[Name="inteligencia-de-compra",Kind="Database"]}[Data],
+				    compras_Schema = #"inteligencia-de-compra_Database"{[Name="compras",Kind="Schema"]}[Data],
+				    dim_orgao_Table = compras_Schema{[Name="dim_orgao",Kind="Table"]}[Data]
+				in
+				    dim_orgao_Table
+
+	annotation PBI_ResultType = Table
+

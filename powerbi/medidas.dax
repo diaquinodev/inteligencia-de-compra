@@ -1,0 +1,156 @@
+// Medidas do painel: fonte única.
+// - `python -m compras painel` lê o bloco DEFINE e gera a tabela Medidas do modelo.
+// - `powerbi\scripts\conferir.ps1` roda as consultas EVALUATE no painel aberto e compara o
+//   resultado com o BigQuery.
+// O arquivo também roda como está na exibição de consulta DAX do Power BI Desktop.
+// Comentário `// ---------- Título ----------` vira a pasta das medidas abaixo dele;
+// os outros comentários viram a descrição da medida seguinte.
+
+DEFINE
+    // ---------- Base ----------
+    MEASURE Medidas[Gasto Total] = SUM ( fato_item_compra[valor_total] )
+    MEASURE Medidas[Itens Comprados] = COUNTROWS ( fato_item_compra )
+    MEASURE Medidas[Fornecedores] = DISTINCTCOUNT ( fato_item_compra[sk_fornecedor] )
+    MEASURE Medidas[Órgãos] = DISTINCTCOUNT ( fato_item_compra[sk_orgao] )
+    MEASURE Medidas[Ticket Médio por Item] = DIVIDE ( [Gasto Total], [Itens Comprados] )
+
+    // ---------- Pergunta 1: onde está o gasto ----------
+    // As medidas de participação comparam o fornecedor com TODOS os fornecedores do contexto
+    // (categoria, período, órgão). REMOVEFILTERS, e não ALLSELECTED: com um filtro "N
+    // superiores" no visual, ALLSELECTED faria a conta só entre os N que aparecem.
+    // Use a coluna dim_fornecedor[documento] no visual: o grão é o CNPJ, como no SQL.
+    MEASURE Medidas[Participação no Gasto] =
+        DIVIDE ( [Gasto Total], CALCULATE ( [Gasto Total], REMOVEFILTERS ( dim_fornecedor ) ) )
+    MEASURE Medidas[Posição do Fornecedor] =
+        IF (
+            HASONEVALUE ( dim_fornecedor[sk_fornecedor] ),
+            RANKX ( ALL ( dim_fornecedor ), [Gasto Total],, DESC, DENSE )
+        )
+    // O gasto de cada fornecedor é calculado uma vez e guardado na variável; somar os que
+    // gastaram tanto ou mais que o atual dá o acumulado. Recalcular o gasto dentro do filtro
+    // faria uma conta por par de fornecedores e travaria o painel.
+    MEASURE Medidas[Participação Acumulada] =
+        VAR GastoAtual = [Gasto Total]
+        VAR GastoPorFornecedor =
+            CALCULATETABLE (
+                ADDCOLUMNS ( VALUES ( dim_fornecedor[sk_fornecedor] ), "@Gasto", [Gasto Total] ),
+                REMOVEFILTERS ( dim_fornecedor )
+            )
+        RETURN
+            DIVIDE (
+                SUMX ( FILTER ( GastoPorFornecedor, [@Gasto] >= GastoAtual ), [@Gasto] ),
+                SUMX ( GastoPorFornecedor, [@Gasto] )
+            )
+    MEASURE Medidas[Classe ABC] =
+        SWITCH (
+            TRUE (),
+            [Participação Acumulada] - [Participação no Gasto] < 0.80, "A",
+            [Participação Acumulada] - [Participação no Gasto] < 0.95, "B",
+            "C"
+        )
+    MEASURE Medidas[HHI] =
+        VAR GastoDoContexto = CALCULATE ( [Gasto Total], REMOVEFILTERS ( dim_fornecedor ) )
+        RETURN
+            SUMX (
+                VALUES ( dim_fornecedor[sk_fornecedor] ),
+                ( DIVIDE ( [Gasto Total], GastoDoContexto ) * 100 ) ^ 2
+            )
+
+    // ---------- Pergunta 2: onde se paga caro ----------
+    MEASURE Medidas[Gasto Comparável] =
+        CALCULATE ( [Gasto Total], fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Compras Comparáveis] =
+        CALCULATE ( [Itens Comprados], fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Preço Mediano] =
+        CALCULATE (
+            MEDIAN ( fato_item_compra[valor_unitario] ),
+            fato_item_compra[comparavel] = TRUE ()
+        )
+    MEASURE Medidas[Compras Acima do P75] =
+        COUNTROWS (
+            FILTER (
+                fato_item_compra,
+                fato_item_compra[comparavel] = TRUE ()
+                    && fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
+            )
+        )
+    MEASURE Medidas[Gasto Acima do P75] =
+        SUMX (
+            FILTER (
+                fato_item_compra,
+                fato_item_compra[comparavel] = TRUE ()
+                    && fato_item_compra[valor_unitario] > fato_item_compra[preco_p75]
+            ),
+            fato_item_compra[valor_total]
+        )
+    // Quanto as compras acima do P75 pagaram a mais, em relação ao que custariam no P75.
+    MEASURE Medidas[Ágio Médio sobre o P75] =
+        DIVIDE ( [Economia Conservadora], [Gasto Acima do P75] - [Economia Conservadora] )
+    // P25, P75, menor e maior preço só fazem sentido com um item e uma unidade no contexto.
+    MEASURE Medidas[Preço P25] =
+        CALCULATE ( MIN ( fato_item_compra[preco_p25] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Preço P75] =
+        CALCULATE ( MIN ( fato_item_compra[preco_p75] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Menor Preço] =
+        CALCULATE ( MIN ( fato_item_compra[valor_unitario] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Maior Preço] =
+        CALCULATE ( MAX ( fato_item_compra[valor_unitario] ), fato_item_compra[comparavel] = TRUE () )
+    MEASURE Medidas[Dispersão de Preço] = DIVIDE ( [Preço P75], [Preço P25] )
+    MEASURE Medidas[Itens com Preço Suspeito] =
+        CALCULATE ( [Itens Comprados], fato_item_compra[preco_suspeito] = TRUE () )
+
+    // ---------- Pergunta 3: quanto dá para economizar ----------
+    MEASURE Medidas[Economia Teto] =
+        SUMX (
+            FILTER ( fato_item_compra, fato_item_compra[comparavel] = TRUE () ),
+            MAX ( fato_item_compra[valor_unitario] - fato_item_compra[preco_mediano], 0 )
+                * fato_item_compra[quantidade]
+        )
+    MEASURE Medidas[Economia Conservadora] =
+        SUMX (
+            FILTER ( fato_item_compra, fato_item_compra[comparavel] = TRUE () ),
+            MAX ( fato_item_compra[valor_unitario] - fato_item_compra[preco_p75], 0 )
+                * fato_item_compra[quantidade]
+        )
+    MEASURE Medidas[Economia Defensável] =
+        CALCULATE ( [Economia Conservadora], fato_item_compra[preco_homogeneo] = TRUE () )
+    MEASURE Medidas[Gasto Homogêneo] =
+        CALCULATE ( [Gasto Comparável], fato_item_compra[preco_homogeneo] = TRUE () )
+    MEASURE Medidas[% Economia Defensável] =
+        DIVIDE ( [Economia Defensável], [Gasto Homogêneo] )
+
+    // ---------- Tempo ----------
+    MEASURE Medidas[Gasto Mês Anterior] =
+        CALCULATE ( [Gasto Total], DATEADD ( dim_tempo[data], -1, MONTH ) )
+    MEASURE Medidas[Variação Mensal] =
+        DIVIDE ( [Gasto Total] - [Gasto Mês Anterior], [Gasto Mês Anterior] )
+    MEASURE Medidas[Gasto Acumulado no Ano] = TOTALYTD ( [Gasto Total], dim_tempo[data] )
+
+// Conferência geral: uma linha com os totais sem filtro.
+EVALUATE
+ROW (
+    "Gasto Total", [Gasto Total],
+    "Itens Comprados", [Itens Comprados],
+    "Fornecedores", [Fornecedores],
+    "Órgãos", [Órgãos],
+    "Compras Comparáveis", [Compras Comparáveis],
+    "Gasto Comparável", [Gasto Comparável],
+    "Itens com Preço Suspeito", [Itens com Preço Suspeito],
+    "Economia Teto", [Economia Teto],
+    "Economia Conservadora", [Economia Conservadora],
+    "Economia Defensável", [Economia Defensável],
+    "% Economia Defensável", [% Economia Defensável],
+    "Compras Acima do P75", [Compras Acima do P75],
+    "Gasto Acima do P75", [Gasto Acima do P75],
+    "Ágio Médio sobre o P75", [Ágio Médio sobre o P75]
+)
+
+// Conferência por categoria.
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_item[categoria],
+    "Gasto Total", [Gasto Total],
+    "Economia Defensável", [Economia Defensável],
+    "HHI", [HHI]
+)
+ORDER BY [Gasto Total] DESC

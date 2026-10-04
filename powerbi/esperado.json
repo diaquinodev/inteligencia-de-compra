@@ -1,0 +1,35 @@
+{
+  "total": {
+    "Gasto Total": 15805333119.659128,
+    "Itens Comprados": 334901,
+    "Fornecedores": 16012,
+    "Órgãos": 2470,
+    "Compras Comparáveis": 267183,
+    "Gasto Comparável": 10741223456.6509,
+    "Itens com Preço Suspeito": 11702,
+    "Economia Teto": 2269801345.6056333,
+    "Economia Conservadora": 1074849587.11637,
+    "Economia Defensável": 263690362.48925135,
+    "Compras Acima do P75": 66582,
+    "Gasto Acima do P75": 2899198542.613825,
+    "% Economia Defensável": 0.06801497112954927,
+    "Ágio Médio sobre o P75": 0.5891688560335131
+  },
+  "categoria": {
+    "Limpeza": {
+      "Gasto Total": 608176971.9120932,
+      "Economia Defensável": 17688716.751325067,
+      "HHI": 44.89523767050182
+    },
+    "Informática": {
+      "Gasto Total": 12922963783.396475,
+      "Economia Defensável": 190829142.0853004,
+      "HHI": 197.0315983254291
+    },
+    "Escritório": {
+      "Gasto Total": 2274192364.351143,
+      "Economia Defensável": 55172503.652625024,
+      "HHI": 317.7758048464945
+    }
+  }
+}

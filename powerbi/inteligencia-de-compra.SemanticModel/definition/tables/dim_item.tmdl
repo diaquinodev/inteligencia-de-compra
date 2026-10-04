@@ -1,0 +1,81 @@
+table dim_item
+	lineageTag: 3a557f1f-b36e-4579-9aa9-3ad8d5ad715f
+
+	column sk_item
+		dataType: int64
+		formatString: 0
+		lineageTag: 7f934e9b-7b58-4e8a-83cc-f5931cb611ff
+		summarizeBy: none
+		sourceColumn: sk_item
+
+		annotation SummarizationSetBy = Automatic
+
+	column codigo_item
+		dataType: string
+		lineageTag: 12278b6f-d782-4c04-a952-d745abafc16c
+		summarizeBy: none
+		sourceColumn: codigo_item
+
+		annotation SummarizationSetBy = Automatic
+
+	column descricao_item
+		dataType: string
+		lineageTag: 86d35852-ce13-490b-a0df-7043ce57175f
+		summarizeBy: none
+		sourceColumn: descricao_item
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_padrao
+		dataType: string
+		lineageTag: e615c6a8-7796-4ae9-8607-98def0e22fc2
+		summarizeBy: none
+		sourceColumn: nome_padrao
+
+		annotation SummarizationSetBy = Automatic
+
+	column codigo_classe
+		dataType: string
+		lineageTag: ad9e841f-33e0-49d0-b22e-3d06f38499af
+		summarizeBy: none
+		sourceColumn: codigo_classe
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_classe
+		dataType: string
+		lineageTag: 2ab15bf1-6b82-44be-bd6b-02035c682739
+		summarizeBy: none
+		sourceColumn: nome_classe
+
+		annotation SummarizationSetBy = Automatic
+
+	column codigo_grupo
+		dataType: string
+		lineageTag: 6e0ac6cb-272b-4155-875e-2467df9e9c93
+		summarizeBy: none
+		sourceColumn: codigo_grupo
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria
+		dataType: string
+		lineageTag: 08c7383b-05ff-4d7a-91be-671252a0eb20
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_item = m
+		mode: import
+		source =
+				let
+				    Fonte = GoogleBigQuery.Database([Implementation="2.0"]),
+				    #"inteligencia-de-compra_Database" = Fonte{[Name="inteligencia-de-compra",Kind="Database"]}[Data],
+				    compras_Schema = #"inteligencia-de-compra_Database"{[Name="compras",Kind="Schema"]}[Data],
+				    dim_item_Table = compras_Schema{[Name="dim_item",Kind="Table"]}[Data]
+				in
+				    dim_item_Table
+
+	annotation PBI_ResultType = Table
+

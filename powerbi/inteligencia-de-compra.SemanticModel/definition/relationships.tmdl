@@ -1,0 +1,16 @@
+relationship AutoDetected_f811bb4f-6773-4b57-846a-125a85959ef8
+	fromColumn: fato_item_compra.sk_item
+	toColumn: dim_item.sk_item
+
+relationship AutoDetected_2b9a2b43-2702-4aaf-a108-22c3cb6c6e5d
+	fromColumn: fato_item_compra.sk_orgao
+	toColumn: dim_orgao.sk_orgao
+
+relationship AutoDetected_8f880994-d452-499b-b687-039c0adb26df
+	fromColumn: fato_item_compra.sk_fornecedor
+	toColumn: dim_fornecedor.sk_fornecedor
+
+relationship a6fd9020-7869-73c5-5efd-cf857259093c
+	fromColumn: fato_item_compra.data
+	toColumn: dim_tempo.data
+

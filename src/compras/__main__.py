@@ -1,12 +1,14 @@
-"""Linha de comando: `python -m compras construir` e `python -m compras testar`."""
+"""Linha de comando: `python -m compras construir`, `testar`, `painel` e `esperado`."""
 
 import argparse
+import json
 import sys
 
 from google.api_core.exceptions import NotFound
 
 from compras import config, executor, qualidade
 from compras.cliente import BigQuery
+from compras.painel import esperado, projeto
 
 
 def _construir(args: argparse.Namespace) -> int:
@@ -48,6 +50,26 @@ def _testar(_: argparse.Namespace) -> int:
     return 1 if falhas else 0
 
 
+def _painel(_: argparse.Namespace) -> int:
+    pasta = config.RAIZ / "powerbi"
+    texto_dax = (pasta / "medidas.dax").read_text(encoding="utf-8")
+    arquivos = projeto.gerar(pasta, texto_dax)
+    print(f"{len(arquivos)} arquivos em {pasta}")
+    print(f"Abra {pasta / (projeto.NOME + '.pbip')} no Power BI Desktop.")
+    return 0
+
+
+def _esperado(_: argparse.Namespace) -> int:
+    cfg = config.carregar()
+    valores = esperado.calcular(BigQuery(cfg), cfg.teto_bytes)
+    destino = config.RAIZ / "powerbi" / "esperado.json"
+    destino.write_text(
+        json.dumps(valores, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
+    print(f"Valores de conferência gravados em {destino}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="compras")
     comandos = parser.add_subparsers(required=True)
@@ -59,6 +81,14 @@ def main() -> int:
 
     testar = comandos.add_parser("testar", help="roda os testes de qualidade de sql/tests/")
     testar.set_defaults(func=_testar)
+
+    painel = comandos.add_parser("painel", help="gera o projeto do Power BI em powerbi/")
+    painel.set_defaults(func=_painel)
+
+    valores = comandos.add_parser(
+        "esperado", help="calcula no BigQuery os valores que o painel deve mostrar"
+    )
+    valores.set_defaults(func=_esperado)
 
     args = parser.parse_args()
     return int(args.func(args))
