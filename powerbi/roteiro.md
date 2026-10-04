@@ -28,13 +28,14 @@ coluna `data`. Sem isso, as medidas de tempo não funcionam.
 
 ## 3. Medidas
 
-**Página inicial** → **Inserir dados** → crie uma tabela vazia chamada `Medidas`. Para cada
-bloco de [medidas.md](medidas.md): **Nova medida**, cole, Enter. Formate as de valor como
-moeda (R$) e as de participação como percentual.
-
-Antes de montar as páginas, confira a tabela "Conferência" de `medidas.md` com um cartão
-para cada medida. Se o Gasto Total não mostrar R$ 15,8 bilhões, pare e revise os
-relacionamentos.
+1. **Página inicial** → **Inserir dados** → sem preencher nada, nome `Medidas` → **Carregar**.
+2. Exibição de **consulta DAX** (ícone DAX na barra da esquerda): cole o conteúdo de
+   [medidas.dax](medidas.dax) e clique em **Executar**.
+3. Compare os dois resultados com a seção "Conferência" de [medidas.md](medidas.md). Se o
+   Gasto Total não mostrar R$ 15,8 bilhões, pare e revise os relacionamentos.
+4. Clique em **Atualizar o modelo com alterações** para gravar as 24 medidas.
+5. Formate as de valor como moeda (R$) e as de participação como percentual; oculte a
+   `Coluna 1` da tabela `Medidas`.
 
 ## 4. Página 1 — Onde está o gasto
 
@@ -43,7 +44,7 @@ relacionamentos.
 | 4 cartões no topo | Gasto Total, Itens Comprados, Fornecedores, Órgãos |
 | Barras horizontais | eixo `dim_item[categoria]`, valor Gasto Total |
 | Linha | eixo `dim_tempo[ano_mes]`, valor Gasto Total |
-| Tabela (top 20 fornecedores) | `dim_fornecedor[nome]`, Gasto Total, Participação no Gasto, Participação Acumulada, Classe ABC; filtro "N superiores" = 20 por Gasto Total |
+| Tabela (top 20 fornecedores) | `dim_fornecedor[documento]`, `dim_fornecedor[nome]`, Posição do Fornecedor, Gasto Total, Participação no Gasto, Participação Acumulada, Classe ABC; filtro "N superiores" = 20 por Gasto Total |
 | Mapa ou barras | `fato_item_compra[sigla_uf]`, Gasto Total |
 | Cartão | HHI |
 | Segmentação | `dim_item[categoria]` (sincronizada entre as páginas) |
