@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inteligencia-de-compra"
+version = "0.1.0"
+description = "Spend analytics com compras públicas federais: BigQuery, SQL analítico, Data Quality, modelo estrela e Power BI"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "google-cloud-bigquery>=3.25",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "ruff>=0.5",
+  "mypy>=1.10",
+  "sqlfluff>=3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+# Texto em português usa caracteres que o ruff confunde com ASCII (acentos, travessão).
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.sqlfluff.core]
+dialect = "bigquery"
+max_line_length = 100
+exclude_rules = "AM04,ST06,RF04"
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
+
+[tool.sqlfluff.rules.capitalisation.functions]
+extended_capitalisation_policy = "upper"
