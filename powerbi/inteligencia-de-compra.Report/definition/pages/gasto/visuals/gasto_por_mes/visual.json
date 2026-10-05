@@ -3,9 +3,9 @@
   "name": "gasto_por_mes",
   "position": {
     "x": 424,
-    "y": 212,
+    "y": 248,
     "z": 21,
-    "height": 196,
+    "height": 168,
     "width": 832,
     "tabOrder": 21
   },
@@ -109,7 +109,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Gasto por mês do resultado da compra'"
+                  "Value": "'Gasto por mês do resultado'"
                 }
               }
             }

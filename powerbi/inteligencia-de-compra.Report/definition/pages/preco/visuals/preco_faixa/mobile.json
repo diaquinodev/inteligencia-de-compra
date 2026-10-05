@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainerMobileState/2.0.0/schema.json",
+  "position": {
+    "x": 8.0,
+    "y": 8,
+    "z": 0,
+    "width": 304.0,
+    "height": 132,
+    "tabOrder": 0
+  },
+  "objects": {
+    "general": [
+      {
+        "properties": {
+          "paragraphs": [
+            {
+              "textRuns": [
+                {
+                  "value": "INTELIGÊNCIA DE COMPRA",
+                  "textStyle": {
+                    "fontSize": "9pt",
+                    "fontWeight": "bold",
+                    "color": "#D3DCDF"
+                  }
+                }
+              ]
+            },
+            {
+              "textRuns": [
+                {
+                  "value": "Onde se paga caro?",
+                  "textStyle": {
+                    "fontSize": "16pt",
+                    "fontWeight": "bold",
+                    "color": "#FFFFFF"
+                  }
+                }
+              ]
+            },
+            {
+              "textRuns": [
+                {
+                  "value": "P75 é o terceiro quartil do preço do mesmo item e unidade, com 10 ou mais compras · preços suspeitos fora",
+                  "textStyle": {
+                    "fontSize": "10pt",
+                    "color": "#D3DCDF"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

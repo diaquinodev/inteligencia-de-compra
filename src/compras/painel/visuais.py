@@ -8,9 +8,11 @@ from dataclasses import dataclass
 from typing import Any
 
 from compras.painel.medidas import TABELA
+from compras.painel.tema import Tema
 
 SCHEMA_BASE = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition"
 SCHEMA_VISUAL = f"{SCHEMA_BASE}/visualContainer/2.0.0/schema.json"
+SCHEMA_CELULAR = f"{SCHEMA_BASE}/visualContainerMobileState/2.0.0/schema.json"
 
 Json = dict[str, Any]
 
@@ -99,6 +101,14 @@ def _sem_titulo() -> Json:
     return {"title": [{"properties": {"show": literal(False)}}]}
 
 
+def _fundo(hexadecimal: str) -> Json:
+    """Fundo e borda do visual numa cor só (a borda mantém o canto arredondado do tema)."""
+    return {
+        "background": [{"properties": {"show": literal(True), "color": cor(hexadecimal)}}],
+        "border": [{"properties": {"show": literal(True), "color": cor(hexadecimal)}}],
+    }
+
+
 def _visual(
     nome: str, posicao: Posicao, ordem: int, corpo: Json, filtros: list[Json] | None = None
 ) -> Json:
@@ -170,16 +180,30 @@ def cartao(
     medida: Medida,
     rotulo: str,
     *,
-    destaque: bool = False,
+    destaque: Tema | None = None,
 ) -> Json:
-    """Indicador. Com `destaque`, é o número que a página lidera: um só por página."""
+    """Indicador. Com `destaque`, é o número que a página lidera: um só por página.
+
+    O destaque usa a cor de identidade do tema como fundo, com o número em branco.
+    """
     corpo: Json = {
         "visualType": "card",
         "query": {"queryState": {"Values": _papel((medida, rotulo))}},
         "visualContainerObjects": _sem_titulo(),
     }
     if destaque:
-        corpo["objects"] = {"labels": [{"properties": {"fontSize": literal(36)}}]}
+        corpo["objects"] = {
+            "labels": [
+                {
+                    "properties": {
+                        "fontSize": literal(destaque.escala.destaque),
+                        "color": cor(destaque.sobre_identidade),
+                    }
+                }
+            ],
+            "categoryLabels": [{"properties": {"color": cor(destaque.sobre_identidade_suave)}}],
+        }
+        corpo["visualContainerObjects"] |= _fundo(destaque.identidade)
     return _visual(nome, posicao, ordem, corpo)
 
 
@@ -304,44 +328,62 @@ def segmentacao(
     )
 
 
+def paragrafos_de_texto(paragrafos: list[list[tuple[str, Json]]]) -> Json:
+    """Objeto `general` de uma caixa de texto. Cada parágrafo é uma lista de (trecho, estilo)."""
+    return {
+        "general": [
+            {
+                "properties": {
+                    "paragraphs": [
+                        {
+                            "textRuns": [
+                                {"value": trecho, "textStyle": estilo}
+                                for trecho, estilo in paragrafo
+                            ]
+                        }
+                        for paragrafo in paragrafos
+                    ]
+                }
+            }
+        ]
+    }
+
+
 def texto(
-    nome: str, posicao: Posicao, ordem: int, paragrafos: list[list[tuple[str, Json]]]
+    nome: str,
+    posicao: Posicao,
+    ordem: int,
+    paragrafos: list[list[tuple[str, Json]]],
+    *,
+    fundo: str | None = None,
+    margem: tuple[int, int] = (0, 0),
 ) -> Json:
-    """Caixa de texto. Cada parágrafo é uma lista de (trecho, estilo)."""
+    """Caixa de texto. Com `fundo`, vira uma faixa colorida; `margem` é (vertical, horizontal)."""
+    moldura = (
+        _fundo(fundo)
+        if fundo
+        else {
+            "background": [{"properties": {"show": literal(False)}}],
+            "border": [{"properties": {"show": literal(False)}}],
+        }
+    )
     return _visual(
         nome,
         posicao,
         ordem,
         {
             "visualType": "textbox",
-            "objects": {
-                "general": [
-                    {
-                        "properties": {
-                            "paragraphs": [
-                                {
-                                    "textRuns": [
-                                        {"value": trecho, "textStyle": estilo}
-                                        for trecho, estilo in paragrafo
-                                    ]
-                                }
-                                for paragrafo in paragrafos
-                            ]
-                        }
-                    }
-                ]
-            },
+            "objects": paragrafos_de_texto(paragrafos),
             "visualContainerObjects": _sem_titulo()
+            | moldura
             | {
-                "background": [{"properties": {"show": literal(False)}}],
-                "border": [{"properties": {"show": literal(False)}}],
                 "padding": [
                     {
                         "properties": {
-                            "top": literal(0),
-                            "bottom": literal(0),
-                            "left": literal(0),
-                            "right": literal(0),
+                            "top": literal(margem[0]),
+                            "bottom": literal(margem[0]),
+                            "left": literal(margem[1]),
+                            "right": literal(margem[1]),
                         }
                     }
                 ],

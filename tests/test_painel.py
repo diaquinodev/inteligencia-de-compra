@@ -3,6 +3,7 @@
 import json
 import re
 import shutil
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +12,7 @@ from jsonschema import Draft7Validator
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT7
 
-from compras.painel import medidas, paginas, projeto
+from compras.painel import medidas, paginas, projeto, tema
 from compras.painel.visuais import campos_usados
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -131,7 +132,7 @@ def test_arquivos_gerados_seguem_os_esquemas_da_microsoft(projeto_gerado: Path) 
         erros = list(Draft7Validator(esquema, registry=REGISTRO).iter_errors(conteudo))
         assert not erros, f"{arquivo.relative_to(projeto_gerado)}: {erros[0].message}"
         conferidos += 1
-    assert conferidos >= 3 + 3 + 3 + 20
+    assert conferidos >= 3 + 3 + 3 + 20 + 20
 
 
 def test_todo_campo_usado_existe_no_modelo(projeto_gerado: Path) -> None:
@@ -169,7 +170,11 @@ def test_visuais_cabem_na_pagina_e_nao_se_sobrepoem(pagina: paginas.Pagina) -> N
     for i, (nome_a, a) in enumerate(caixas):
         for nome_b, b in caixas[i + 1 :]:
             separados = a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]
-            assert separados, f"{nome_a} e {nome_b} se sobrepõem"
+            # A faixa do cabeçalho é fundo: o filtro fica sobre ela, inteiro dentro dela.
+            dentro_da_faixa = nome_a.endswith("_faixa") and (
+                a[0] <= b[0] and a[1] <= b[1] and b[2] <= a[2] and b[3] <= a[3]
+            )
+            assert separados or dentro_da_faixa, f"{nome_a} e {nome_b} se sobrepõem"
 
 
 @pytest.mark.parametrize("pagina", paginas.todas(), ids=lambda p: p.nome)
@@ -187,6 +192,74 @@ def test_graficos_tem_uma_serie_so(pagina: paginas.Pagina) -> None:
         papeis = visual["visual"].get("query", {}).get("queryState", {})
         if "Y" in papeis:
             assert len(papeis["Y"]["projections"]) == 1, visual["name"]
+
+
+@pytest.mark.parametrize("t", tema.TEMAS.values(), ids=lambda t: t.chave)
+def test_cores_do_tema_tem_contraste_suficiente(t: tema.Tema) -> None:
+    """Texto: 4,5:1 (WCAG AA). Marca de dado contra o cartão: 3:1."""
+    assert tema.contraste(t.sobre_identidade, t.identidade) >= 4.5
+    assert tema.contraste(t.sobre_identidade_suave, t.identidade) >= 4.5
+    assert tema.contraste(t.dado, tema.FUNDO_CARTAO) >= 3
+    assert tema.contraste(tema.TEXTO_SUAVE, tema.FUNDO_CARTAO) >= 4.5
+    assert tema.contraste(tema.TEXTO_SUAVE, t.fundo_pagina) >= 4.5
+    # A identidade é fundo, o dado é marca: precisam ser cores diferentes à vista.
+    assert tema.contraste(t.dado, t.identidade) >= 2
+
+
+def test_temas_tem_identidades_diferentes() -> None:
+    assert len({t.identidade for t in tema.TEMAS.values()}) == len(tema.TEMAS)
+    assert len({t.dado for t in tema.TEMAS.values()}) == len(tema.TEMAS)
+
+
+def test_escala_de_tamanhos_tem_degraus_visiveis() -> None:
+    """Cada nível é menor que o anterior; os quatro primeiros degraus são de 20% ou mais."""
+    niveis = tema.Escala().niveis()
+    assert niveis == sorted(niveis, reverse=True)
+    assert len(set(niveis)) == len(niveis)
+    for maior, menor in list(pairwise(niveis))[:4]:
+        assert maior / menor >= 1.2, (maior, menor)
+
+
+def test_tema_escolhido_muda_as_cores_do_projeto(projeto_gerado: Path) -> None:
+    arquivo = next(projeto_gerado.rglob(f"{tema.NOME}.json"))
+    assert json.loads(arquivo.read_text(encoding="utf-8"))["dataColors"] == [tema.PADRAO.dado]
+    outro = tema.TEMAS["financeiro"]
+    projeto.gerar(projeto_gerado, (POWERBI / "medidas.dax").read_text(encoding="utf-8"), outro)
+    assert json.loads(arquivo.read_text(encoding="utf-8"))["dataColors"] == [outro.dado]
+    faixa = next(projeto_gerado.rglob("gasto_faixa/visual.json")).read_text(encoding="utf-8")
+    assert outro.identidade in faixa and tema.PADRAO.identidade not in faixa
+
+
+@pytest.mark.parametrize("pagina", paginas.todas(), ids=lambda p: p.nome)
+def test_layout_de_celular_cabe_na_tela_sem_sobreposicao(pagina: paginas.Pagina) -> None:
+    nomes = {v["name"] for v in pagina.visuais}
+    assert set(pagina.celular) == nomes, "todo visual da página aparece no celular"
+    caixas = []
+    for nome, estado in pagina.celular.items():
+        p = estado["position"]
+        assert p["x"] >= 0 and p["x"] + p["width"] <= paginas.LARGURA_CELULAR, nome
+        # Nada estreito demais para ler ou tocar.
+        assert p["width"] >= 140 and p["height"] >= 64, nome
+        caixas.append((nome, (p["x"], p["y"], p["x"] + p["width"], p["y"] + p["height"])))
+    for i, (nome_a, a) in enumerate(caixas):
+        for nome_b, b in caixas[i + 1 :]:
+            separados = a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]
+            assert separados, f"{nome_a} e {nome_b} se sobrepõem no celular"
+
+
+@pytest.mark.parametrize("pagina", paginas.todas(), ids=lambda p: p.nome)
+def test_celular_segue_a_hierarquia_da_pagina(pagina: paginas.Pagina) -> None:
+    """De cima para baixo: pergunta, filtro, número principal, apoio, e só então o detalhe."""
+    ordem = sorted(pagina.celular, key=lambda n: pagina.celular[n]["position"]["y"])
+    assert ordem[0].endswith("_faixa")
+    assert ordem[1].endswith("_categoria")
+    assert ordem[2].endswith("_kpi_principal")
+    tipos = {v["name"]: v["visual"]["visualType"] for v in pagina.visuais}
+    ultimo_cartao = max(i for i, n in enumerate(ordem) if tipos[n] == "card")
+    primeiro_detalhe = min(
+        i for i, n in enumerate(ordem) if tipos[n] not in {"card", "textbox", "slicer"}
+    )
+    assert ultimo_cartao < primeiro_detalhe
 
 
 def test_gerar_de_novo_da_o_mesmo_resultado_e_remove_visual_antigo(projeto_gerado: Path) -> None:

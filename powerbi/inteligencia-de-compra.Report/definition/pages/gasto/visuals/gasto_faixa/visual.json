@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
-  "name": "gasto_titulo",
+  "name": "gasto_faixa",
   "position": {
     "x": 24,
-    "y": 12,
+    "y": 16,
     "z": 0,
-    "height": 80,
-    "width": 900,
+    "height": 96,
+    "width": 1232,
     "tabOrder": 0
   },
   "visual": {
@@ -21,9 +21,9 @@
                   {
                     "value": "INTELIGÊNCIA DE COMPRA",
                     "textStyle": {
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "fontWeight": "bold",
-                      "color": "#898781"
+                      "color": "#D3DCDF"
                     }
                   }
                 ]
@@ -33,9 +33,9 @@
                   {
                     "value": "Onde está o gasto?",
                     "textStyle": {
-                      "fontSize": "18pt",
+                      "fontSize": "20pt",
                       "fontWeight": "bold",
-                      "color": "#0B0B0B"
+                      "color": "#FFFFFF"
                     }
                   }
                 ]
@@ -46,7 +46,7 @@
                     "value": "Compras federais de escritório, informática e limpeza · contratações de 2024 e 2025",
                     "textStyle": {
                       "fontSize": "10pt",
-                      "color": "#52514E"
+                      "color": "#D3DCDF"
                     }
                   }
                 ]
@@ -76,7 +76,18 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B3F4C'"
+                    }
+                  }
                 }
               }
             }
@@ -89,7 +100,18 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B3F4C'"
+                    }
+                  }
                 }
               }
             }
@@ -102,28 +124,28 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "10D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "10D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "20D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "20D"
                 }
               }
             }

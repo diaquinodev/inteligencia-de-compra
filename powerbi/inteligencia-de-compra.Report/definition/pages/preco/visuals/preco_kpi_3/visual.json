@@ -3,9 +3,9 @@
   "name": "preco_kpi_3",
   "position": {
     "x": 1040.0,
-    "y": 100,
+    "y": 128,
     "z": 14,
-    "height": 96,
+    "height": 104,
     "width": 216.0,
     "tabOrder": 14
   },
@@ -27,7 +27,7 @@
                 }
               },
               "queryRef": "Medidas.Itens com Preço Suspeito",
-              "displayName": "Compras com preço suspeito"
+              "displayName": "Preço suspeito"
             }
           ]
         }

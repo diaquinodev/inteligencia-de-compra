@@ -3,9 +3,9 @@
   "name": "gasto_kpi_2",
   "position": {
     "x": 808.0,
-    "y": 100,
+    "y": 128,
     "z": 13,
-    "height": 96,
+    "height": 104,
     "width": 216.0,
     "tabOrder": 13
   },
@@ -27,7 +27,7 @@
                 }
               },
               "queryRef": "Medidas.Órgãos",
-              "displayName": "Órgãos compradores"
+              "displayName": "Órgãos"
             }
           ]
         }

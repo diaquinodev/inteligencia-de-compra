@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainerMobileState/2.0.0/schema.json",
+  "position": {
+    "x": 8.0,
+    "y": 8,
+    "z": 0,
+    "width": 304.0,
+    "height": 168,
+    "tabOrder": 0
+  },
+  "objects": {
+    "general": [
+      {
+        "properties": {
+          "paragraphs": [
+            {
+              "textRuns": [
+                {
+                  "value": "INTELIGÊNCIA DE COMPRA",
+                  "textStyle": {
+                    "fontSize": "9pt",
+                    "fontWeight": "bold",
+                    "color": "#D3DCDF"
+                  }
+                }
+              ]
+            },
+            {
+              "textRuns": [
+                {
+                  "value": "Quanto dá para economizar?",
+                  "textStyle": {
+                    "fontSize": "16pt",
+                    "fontWeight": "bold",
+                    "color": "#FFFFFF"
+                  }
+                }
+              ]
+            },
+            {
+              "textRuns": [
+                {
+                  "value": "Três estimativas, da mais otimista à mais defensável · a decisão usa a menor, que só conta itens de preço homogêneo",
+                  "textStyle": {
+                    "fontSize": "10pt",
+                    "color": "#D3DCDF"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
