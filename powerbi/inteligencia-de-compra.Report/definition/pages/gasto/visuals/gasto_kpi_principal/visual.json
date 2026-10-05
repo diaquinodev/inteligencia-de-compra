@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
-  "name": "preco_kpi_4",
+  "name": "gasto_kpi_principal",
   "position": {
-    "x": 1022.4,
-    "y": 92,
-    "z": 14,
-    "height": 100,
-    "width": 233.6,
-    "tabOrder": 14
+    "x": 24,
+    "y": 100,
+    "z": 10,
+    "height": 96,
+    "width": 304,
+    "tabOrder": 10
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Itens com Preço Suspeito"
+                  "Property": "Gasto Total"
                 }
               },
-              "queryRef": "Medidas.Itens com Preço Suspeito",
-              "displayName": "Compras com preço suspeito"
+              "queryRef": "Medidas.Gasto Total",
+              "displayName": "Gasto total"
             }
           ]
         }
@@ -41,6 +41,21 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "36D"
                 }
               }
             }

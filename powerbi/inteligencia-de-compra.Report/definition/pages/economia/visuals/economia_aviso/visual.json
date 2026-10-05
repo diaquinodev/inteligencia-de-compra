@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "economia_aviso",
   "position": {
-    "x": 560,
-    "y": 648,
+    "x": 540,
+    "y": 660,
     "z": 23,
-    "height": 56,
-    "width": 696,
+    "height": 36,
+    "width": 716,
     "tabOrder": 23
   },
   "visual": {
@@ -22,7 +22,7 @@
                     "value": "Preço acima da referência não indica irregularidade: frete, lote, prazo e marca explicam parte da diferença. A análise aponta onde olhar.",
                     "textStyle": {
                       "fontSize": "9pt",
-                      "color": "#6B7280"
+                      "color": "#52514E"
                     }
                   }
                 ]
@@ -66,6 +66,40 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }

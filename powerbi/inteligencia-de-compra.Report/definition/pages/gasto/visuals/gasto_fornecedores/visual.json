@@ -3,10 +3,10 @@
   "name": "gasto_fornecedores",
   "position": {
     "x": 24,
-    "y": 436,
+    "y": 424,
     "z": 22,
-    "height": 268,
-    "width": 816,
+    "height": 272,
+    "width": 832,
     "tabOrder": 22
   },
   "visual": {
@@ -27,7 +27,7 @@
                 }
               },
               "queryRef": "Medidas.Posição do Fornecedor",
-              "displayName": "Posição"
+              "displayName": "#"
             },
             {
               "field": {
@@ -155,7 +155,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "56D"
+                  "Value": "36D"
                 }
               }
             }
@@ -169,7 +169,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "268D"
+                  "Value": "280D"
                 }
               }
             }
@@ -264,7 +264,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'15 maiores fornecedores (por CNPJ)'"
+                  "Value": "'Os 10 maiores fornecedores, por CNPJ'"
                 }
               }
             }
@@ -338,7 +338,7 @@
                         }
                       }
                     ],
-                    "Top": 15
+                    "Top": 10
                   }
                 }
               },

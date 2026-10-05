@@ -172,6 +172,23 @@ def test_visuais_cabem_na_pagina_e_nao_se_sobrepoem(pagina: paginas.Pagina) -> N
             assert separados, f"{nome_a} e {nome_b} se sobrepõem"
 
 
+@pytest.mark.parametrize("pagina", paginas.todas(), ids=lambda p: p.nome)
+def test_cada_pagina_tem_um_unico_numero_em_destaque(pagina: paginas.Pagina) -> None:
+    cartoes = [v for v in pagina.visuais if v["visual"]["visualType"] == "card"]
+    em_destaque = [v for v in cartoes if "objects" in v["visual"]]
+    assert len(em_destaque) == 1
+    assert 3 <= len(cartoes) <= 5
+
+
+@pytest.mark.parametrize("pagina", paginas.todas(), ids=lambda p: p.nome)
+def test_graficos_tem_uma_serie_so(pagina: paginas.Pagina) -> None:
+    """O tema tem uma cor de dado; um gráfico com várias séries precisaria de paleta validada."""
+    for visual in pagina.visuais:
+        papeis = visual["visual"].get("query", {}).get("queryState", {})
+        if "Y" in papeis:
+            assert len(papeis["Y"]["projections"]) == 1, visual["name"]
+
+
 def test_gerar_de_novo_da_o_mesmo_resultado_e_remove_visual_antigo(projeto_gerado: Path) -> None:
     def retrato() -> dict[str, str]:
         return {

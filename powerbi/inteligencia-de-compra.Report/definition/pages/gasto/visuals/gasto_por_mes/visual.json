@@ -2,15 +2,15 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "gasto_por_mes",
   "position": {
-    "x": 440,
-    "y": 208,
+    "x": 424,
+    "y": 212,
     "z": 21,
-    "height": 212,
-    "width": 816,
+    "height": 196,
+    "width": 832,
     "tabOrder": 21
   },
   "visual": {
-    "visualType": "clusteredColumnChart",
+    "visualType": "areaChart",
     "query": {
       "queryState": {
         "Category": {
@@ -23,10 +23,10 @@
                       "Entity": "dim_tempo"
                     }
                   },
-                  "Property": "ano_mes"
+                  "Property": "inicio_do_mes"
                 }
               },
-              "queryRef": "dim_tempo.ano_mes"
+              "queryRef": "dim_tempo.inicio_do_mes"
             }
           ]
         },
@@ -58,7 +58,7 @@
                     "Entity": "dim_tempo"
                   }
                 },
-                "Property": "ano_mes"
+                "Property": "inicio_do_mes"
               }
             },
             "direction": "Ascending"
@@ -109,7 +109,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Gasto por mês do resultado'"
+                  "Value": "'Gasto por mês do resultado da compra'"
                 }
               }
             }

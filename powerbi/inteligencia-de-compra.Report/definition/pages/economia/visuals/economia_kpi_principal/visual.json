@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
-  "name": "gasto_kpi_4",
+  "name": "economia_kpi_principal",
   "position": {
-    "x": 1022.4,
-    "y": 92,
-    "z": 14,
-    "height": 100,
-    "width": 233.6,
-    "tabOrder": 14
+    "x": 24,
+    "y": 100,
+    "z": 10,
+    "height": 96,
+    "width": 304,
+    "tabOrder": 10
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "HHI"
+                  "Property": "Economia Defensável"
                 }
               },
-              "queryRef": "Medidas.HHI",
-              "displayName": "Concentração (HHI)"
+              "queryRef": "Medidas.Economia Defensável",
+              "displayName": "Economia defensável: só itens de preço homogêneo"
             }
           ]
         }
@@ -41,6 +41,21 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "36D"
                 }
               }
             }

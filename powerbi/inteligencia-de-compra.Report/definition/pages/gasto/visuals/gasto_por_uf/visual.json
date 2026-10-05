@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "gasto_por_uf",
   "position": {
-    "x": 856,
-    "y": 436,
+    "x": 872,
+    "y": 424,
     "z": 23,
-    "height": 268,
-    "width": 400,
+    "height": 272,
+    "width": 384,
     "tabOrder": 23
   },
   "visual": {
@@ -109,7 +109,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'10 UFs com maior gasto'"
+                  "Value": "'As 8 UFs com maior gasto'"
                 }
               }
             }
@@ -183,7 +183,7 @@
                         }
                       }
                     ],
-                    "Top": 10
+                    "Top": 8
                   }
                 }
               },

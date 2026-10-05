@@ -2,18 +2,18 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "economia_por_categoria",
   "position": {
-    "x": 560,
-    "y": 208,
+    "x": 540,
+    "y": 212,
     "z": 21,
-    "height": 200,
-    "width": 696,
+    "height": 172,
+    "width": 716,
     "tabOrder": 21
   },
   "visual": {
-    "visualType": "clusteredColumnChart",
+    "visualType": "tableEx",
     "query": {
       "queryState": {
-        "Category": {
+        "Values": {
           "projections": [
             {
               "field": {
@@ -26,12 +26,9 @@
                   "Property": "categoria"
                 }
               },
-              "queryRef": "dim_item.categoria"
-            }
-          ]
-        },
-        "Y": {
-          "projections": [
+              "queryRef": "dim_item.categoria",
+              "displayName": "Categoria"
+            },
             {
               "field": {
                 "Measure": {
@@ -43,7 +40,8 @@
                   "Property": "Economia Teto"
                 }
               },
-              "queryRef": "Medidas.Economia Teto"
+              "queryRef": "Medidas.Economia Teto",
+              "displayName": "Teto"
             },
             {
               "field": {
@@ -56,7 +54,8 @@
                   "Property": "Economia Conservadora"
                 }
               },
-              "queryRef": "Medidas.Economia Conservadora"
+              "queryRef": "Medidas.Economia Conservadora",
+              "displayName": "Conservadora"
             },
             {
               "field": {
@@ -69,7 +68,22 @@
                   "Property": "Economia Defensável"
                 }
               },
-              "queryRef": "Medidas.Economia Defensável"
+              "queryRef": "Medidas.Economia Defensável",
+              "displayName": "Defensável"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "% Economia Defensável"
+                }
+              },
+              "queryRef": "Medidas.% Economia Defensável",
+              "displayName": "% do gasto"
             }
           ]
         }
@@ -84,7 +98,7 @@
                     "Entity": "Medidas"
                   }
                 },
-                "Property": "Economia Teto"
+                "Property": "Economia Defensável"
               }
             },
             "direction": "Descending"
@@ -94,29 +108,88 @@
       }
     },
     "objects": {
-      "labels": [
+      "total": [
         {
           "properties": {
-            "show": {
+            "totals": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             }
           }
         }
       ],
-      "legend": [
+      "columnWidth": [
         {
           "properties": {
-            "show": {
+            "value": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "120D"
                 }
               }
             }
+          },
+          "selector": {
+            "metadata": "dim_item.categoria"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "140D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Economia Teto"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "140D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Economia Conservadora"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "140D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Economia Defensável"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "100D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.% Economia Defensável"
           }
         }
       ]

@@ -5,7 +5,7 @@
     "x": 24,
     "y": 12,
     "z": 0,
-    "height": 68,
+    "height": 80,
     "width": 900,
     "tabOrder": 0
   },
@@ -19,11 +19,23 @@
               {
                 "textRuns": [
                   {
-                    "value": "Onde está o gasto",
+                    "value": "INTELIGÊNCIA DE COMPRA",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "fontWeight": "bold",
+                      "color": "#898781"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Onde está o gasto?",
                     "textStyle": {
                       "fontSize": "18pt",
                       "fontWeight": "bold",
-                      "color": "#111827"
+                      "color": "#0B0B0B"
                     }
                   }
                 ]
@@ -34,7 +46,7 @@
                     "value": "Compras federais de escritório, informática e limpeza · contratações de 2024 e 2025",
                     "textStyle": {
                       "fontSize": "10pt",
-                      "color": "#6B7280"
+                      "color": "#52514E"
                     }
                   }
                 ]
@@ -78,6 +90,40 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }

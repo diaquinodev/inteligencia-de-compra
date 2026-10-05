@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
   "name": "preco_kpi_2",
   "position": {
-    "x": 523.2,
-    "y": 92,
-    "z": 12,
-    "height": 100,
-    "width": 233.6,
-    "tabOrder": 12
+    "x": 808.0,
+    "y": 100,
+    "z": 13,
+    "height": 96,
+    "width": 216.0,
+    "tabOrder": 13
   },
   "visual": {
     "visualType": "card",
@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Gasto Acima do P75"
+                  "Property": "Gasto Comparável"
                 }
               },
-              "queryRef": "Medidas.Gasto Acima do P75",
-              "displayName": "Gasto em compras acima do P75"
+              "queryRef": "Medidas.Gasto Comparável",
+              "displayName": "Gasto comparável"
             }
           ]
         }
