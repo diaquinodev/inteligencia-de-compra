@@ -68,6 +68,18 @@ conferidos automaticamente contra o BigQuery (23 de 23 valores conferem); o proc
 
 ![Quanto dá para economizar](docs/img/painel-economia.png)
 
+Cada página tem também um layout para celular, gerado pelo mesmo código:
+
+<p>
+  <img src="docs/img/celular-gasto.png" width="30%" alt="Onde está o gasto, no celular">
+  <img src="docs/img/celular-preco.png" width="30%" alt="Onde se paga caro, no celular">
+  <img src="docs/img/celular-economia.png" width="30%" alt="Quanto dá para economizar, no celular">
+</p>
+
+As cores vêm de um tema por área de negócio (compras, financeiro, vendas, pessoas,
+operações), com contraste conferido por teste. As decisões estão em
+[powerbi/DESIGN.md](powerbi/DESIGN.md).
+
 ## Como foi construído
 
 ```mermaid

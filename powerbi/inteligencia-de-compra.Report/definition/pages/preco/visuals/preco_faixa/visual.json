@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
-  "name": "economia_titulo",
+  "name": "preco_faixa",
   "position": {
     "x": 24,
-    "y": 12,
+    "y": 16,
     "z": 0,
-    "height": 80,
-    "width": 900,
+    "height": 96,
+    "width": 1232,
     "tabOrder": 0
   },
   "visual": {
@@ -21,9 +21,9 @@
                   {
                     "value": "INTELIGÊNCIA DE COMPRA",
                     "textStyle": {
-                      "fontSize": "8pt",
+                      "fontSize": "9pt",
                       "fontWeight": "bold",
-                      "color": "#898781"
+                      "color": "#D3DCDF"
                     }
                   }
                 ]
@@ -31,11 +31,11 @@
               {
                 "textRuns": [
                   {
-                    "value": "Quanto dá para economizar?",
+                    "value": "Onde se paga caro?",
                     "textStyle": {
-                      "fontSize": "18pt",
+                      "fontSize": "20pt",
                       "fontWeight": "bold",
-                      "color": "#0B0B0B"
+                      "color": "#FFFFFF"
                     }
                   }
                 ]
@@ -43,10 +43,10 @@
               {
                 "textRuns": [
                   {
-                    "value": "Três estimativas, da mais otimista à mais defensável · a decisão usa a menor",
+                    "value": "P75 é o terceiro quartil do preço do mesmo item e unidade, com 10 ou mais compras · preços suspeitos fora",
                     "textStyle": {
                       "fontSize": "10pt",
-                      "color": "#52514E"
+                      "color": "#D3DCDF"
                     }
                   }
                 ]
@@ -76,7 +76,18 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B3F4C'"
+                    }
+                  }
                 }
               }
             }
@@ -89,7 +100,18 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B3F4C'"
+                    }
+                  }
                 }
               }
             }
@@ -102,28 +124,28 @@
             "top": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "10D"
                 }
               }
             },
             "bottom": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "10D"
                 }
               }
             },
             "left": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "20D"
                 }
               }
             },
             "right": {
               "expr": {
                 "Literal": {
-                  "Value": "0D"
+                  "Value": "20D"
                 }
               }
             }

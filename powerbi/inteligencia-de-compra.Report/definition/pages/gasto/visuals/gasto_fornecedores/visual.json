@@ -3,9 +3,9 @@
   "name": "gasto_fornecedores",
   "position": {
     "x": 24,
-    "y": 424,
+    "y": 432,
     "z": 22,
-    "height": 272,
+    "height": 264,
     "width": 832,
     "tabOrder": 22
   },
@@ -264,7 +264,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Os 10 maiores fornecedores, por CNPJ'"
+                  "Value": "'Os 8 maiores fornecedores, por CNPJ'"
                 }
               }
             }
@@ -338,7 +338,7 @@
                         }
                       }
                     ],
-                    "Top": 10
+                    "Top": 8
                   }
                 }
               },

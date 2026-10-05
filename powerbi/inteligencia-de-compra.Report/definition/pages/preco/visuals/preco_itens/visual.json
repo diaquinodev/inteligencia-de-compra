@@ -3,9 +3,9 @@
   "name": "preco_itens",
   "position": {
     "x": 24,
-    "y": 212,
+    "y": 248,
     "z": 20,
-    "height": 484,
+    "height": 448,
     "width": 832,
     "tabOrder": 20
   },
@@ -320,7 +320,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Os 20 itens com maior gasto acima do P75'"
+                  "Value": "'Os 15 itens com maior gasto acima do P75'"
                 }
               }
             }
@@ -394,7 +394,7 @@
                         }
                       }
                     ],
-                    "Top": 20
+                    "Top": 15
                   }
                 }
               },

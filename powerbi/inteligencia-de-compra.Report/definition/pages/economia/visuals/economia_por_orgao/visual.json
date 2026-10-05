@@ -3,9 +3,9 @@
   "name": "economia_por_orgao",
   "position": {
     "x": 540,
-    "y": 400,
+    "y": 414,
     "z": 22,
-    "height": 244,
+    "height": 282,
     "width": 716,
     "tabOrder": 22
   },
@@ -180,7 +180,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Os 10 órgãos com maior economia defensável'"
+                  "Value": "'Os 8 órgãos com maior economia defensável'"
                 }
               }
             }
@@ -254,7 +254,7 @@
                         }
                       }
                     ],
-                    "Top": 10
+                    "Top": 8
                   }
                 }
               },

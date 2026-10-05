@@ -6,8 +6,8 @@ partir de três fontes em texto, e conferido automaticamente contra o BigQuery.
 | Fonte | O que define |
 |---|---|
 | [medidas.dax](medidas.dax) | as 30 medidas DAX e as consultas de conferência |
-| [src/compras/painel/paginas.py](../src/compras/painel/paginas.py) | as 3 páginas: quais visuais, com quais campos, em que posição |
-| [src/compras/painel/tema.py](../src/compras/painel/tema.py) | cores, fontes e o estilo comum dos visuais |
+| [src/compras/painel/paginas.py](../src/compras/painel/paginas.py) | as 3 páginas: quais visuais, com quais campos, em que posição, no computador e no celular |
+| [src/compras/painel/tema.py](../src/compras/painel/tema.py) | os temas por área de negócio: cores, escala de tamanhos de fonte e estilo dos visuais |
 
 As decisões de design (hierarquia, cor, tipografia, escolha de cada visual) estão em
 [DESIGN.md](DESIGN.md).
@@ -43,6 +43,7 @@ Power BI Desktop (Obter dados → Google BigQuery).
 
 ```powershell
 # 1. Gera o projeto do Power BI a partir das fontes em texto
+#    (--tema escolhe a área de negócio: compras, financeiro, vendas, pessoas, operacoes)
 python -m compras painel
 
 # 2. Calcula no BigQuery os valores que o painel deve mostrar
@@ -54,8 +55,9 @@ powershell -ExecutionPolicy Bypass -File powerbi\scripts\abrir.ps1
 # 4. Compara as medidas do painel com os valores do BigQuery
 powershell -ExecutionPolicy Bypass -File powerbi\scripts\conferir.ps1
 
-# 5. Captura uma imagem de cada página em docs\img\
+# 5. Captura uma imagem de cada página em docs\img\, no computador e no celular
 powershell -ExecutionPolicy Bypass -File powerbi\scripts\capturar.ps1
+powershell -ExecutionPolicy Bypass -File powerbi\scripts\capturar.ps1 -Celular
 ```
 
 Saída esperada do passo 4:
@@ -78,6 +80,9 @@ O passo 4 sai com código 1 se qualquer valor divergir.
 | Todo campo usado num visual existe no modelo | `tests/test_painel.py` | sim |
 | Visuais cabem na página e não se sobrepõem | `tests/test_painel.py` | sim |
 | Cada página tem um único número em destaque; todo gráfico tem uma série só | `tests/test_painel.py` | sim |
+| Cada tema tem contraste suficiente (4,5:1 no texto, 3:1 nas marcas) | `tests/test_painel.py` | sim |
+| A escala de tamanhos de fonte tem degraus visíveis | `tests/test_painel.py` | sim |
+| No celular: todo visual aparece, cabe na tela, não se sobrepõe e segue a hierarquia | `tests/test_painel.py` | sim |
 | Gerar duas vezes dá o mesmo resultado; visual antigo é removido | `tests/test_painel.py` | sim |
 | O modelo TMDL carrega na biblioteca da Microsoft | ao abrir no Power BI Desktop | não |
 | As medidas DAX dão os mesmos números que o SQL no BigQuery | `scripts/conferir.ps1` | não |
@@ -99,7 +104,8 @@ primeira execução, em `scripts/.bibliotecas/`):
 - `abrir.ps1` espera a página aparecer na tela e pede a carga completa dos dados;
 - `conferir.ps1` executa as consultas de conferência de `medidas.dax`;
 - `capturar.ps1` troca de página pela automação de interface do Windows e captura só a
-  janela do Power BI, recortando a área da página.
+  janela do Power BI, recortando a área da página. Com `-Celular`, troca para o layout
+  móvel, captura a primeira tela de cada página e volta ao layout normal.
 
 ## Como alterar o painel
 
@@ -107,7 +113,8 @@ primeira execução, em `scripts/.bibliotecas/`):
 |---|---|---|
 | uma medida | `medidas.dax` (e `FORMATOS` em `medidas.py`, se for nova) | passos 1 a 4 |
 | um visual, um título, uma posição | `paginas.py` | passos 1, 3 e 5 |
-| cores e fontes | `tema.py` | passos 1, 3 e 5 |
+| cores e tamanhos de fonte, ou o tema de uma área nova | `tema.py` | passos 1, 3 e 5 |
+| a ordem e a altura dos visuais no celular | `paginas.py` (lista `celular` de cada página) | passos 1, 3 e 5 |
 | uma coluna do modelo | o SQL em `sql/` e o TMDL da tabela | `construir`, depois passos 1 a 5 |
 
 Não salve o projeto pelo Power BI Desktop: ele regrava os arquivos no formato dele e a

@@ -88,8 +88,8 @@ def _pagina(pagina: paginas.Pagina) -> dict[str, Any]:
     }
 
 
-def gerar(pasta: Path, texto_dax: str) -> list[Path]:
-    """Gera o projeto em `pasta` e devolve os arquivos escritos."""
+def gerar(pasta: Path, texto_dax: str, t: tema.Tema = tema.PADRAO) -> list[Path]:
+    """Gera o projeto em `pasta`, no tema `t`, e devolve os arquivos escritos."""
     modelo = pasta / f"{NOME}.SemanticModel"
     definicao_modelo = modelo / "definition"
     arquivo_modelo = definicao_modelo / "model.tmdl"
@@ -115,9 +115,11 @@ def gerar(pasta: Path, texto_dax: str) -> list[Path]:
         {"$schema": f"{SCHEMA_BASE}/versionMetadata/1.0.0/schema.json", "version": "2.0.0"},
     )
     _gravar(definicao / "report.json", _relatorio())
-    _gravar(relatorio / "StaticResources" / "RegisteredResources" / _ARQUIVO_TEMA, tema.definicao())
+    _gravar(
+        relatorio / "StaticResources" / "RegisteredResources" / _ARQUIVO_TEMA, tema.definicao(t)
+    )
 
-    todas = paginas.todas()
+    todas = paginas.todas(t)
     _gravar(
         definicao / "pages" / "pages.json",
         {
@@ -130,7 +132,10 @@ def gerar(pasta: Path, texto_dax: str) -> list[Path]:
         pasta_pagina = definicao / "pages" / pagina.nome
         _gravar(pasta_pagina / "page.json", _pagina(pagina))
         for visual in pagina.visuais:
-            _gravar(pasta_pagina / "visuals" / visual["name"] / "visual.json", visual)
+            pasta_visual = pasta_pagina / "visuals" / visual["name"]
+            _gravar(pasta_visual / "visual.json", visual)
+            if visual["name"] in pagina.celular:
+                _gravar(pasta_visual / "mobile.json", pagina.celular[visual["name"]])
 
     return sorted(
         [

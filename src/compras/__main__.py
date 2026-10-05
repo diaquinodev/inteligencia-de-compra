@@ -8,7 +8,7 @@ from google.api_core.exceptions import NotFound
 
 from compras import config, executor, qualidade
 from compras.cliente import BigQuery
-from compras.painel import esperado, projeto
+from compras.painel import esperado, projeto, tema
 
 
 def _construir(args: argparse.Namespace) -> int:
@@ -50,11 +50,12 @@ def _testar(_: argparse.Namespace) -> int:
     return 1 if falhas else 0
 
 
-def _painel(_: argparse.Namespace) -> int:
+def _painel(args: argparse.Namespace) -> int:
     pasta = config.RAIZ / "powerbi"
     texto_dax = (pasta / "medidas.dax").read_text(encoding="utf-8")
-    arquivos = projeto.gerar(pasta, texto_dax)
-    print(f"{len(arquivos)} arquivos em {pasta}")
+    escolhido = tema.TEMAS[args.tema]
+    arquivos = projeto.gerar(pasta, texto_dax, escolhido)
+    print(f"{len(arquivos)} arquivos em {pasta} (tema: {escolhido.area})")
     print(f"Abra {pasta / (projeto.NOME + '.pbip')} no Power BI Desktop.")
     return 0
 
@@ -83,6 +84,12 @@ def main() -> int:
     testar.set_defaults(func=_testar)
 
     painel = comandos.add_parser("painel", help="gera o projeto do Power BI em powerbi/")
+    painel.add_argument(
+        "--tema",
+        choices=sorted(tema.TEMAS),
+        default=tema.PADRAO.chave,
+        help="área de negócio que define as cores do painel",
+    )
     painel.set_defaults(func=_painel)
 
     valores = comandos.add_parser(
