@@ -48,10 +48,20 @@ function Invoke-Botao {
     param($Raiz, [string]$Nome)
     $condicao = New-Object System.Windows.Automation.PropertyCondition(
         [System.Windows.Automation.AutomationElement]::NameProperty, $Nome)
-    $botao = $Raiz.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condicao) |
-        Where-Object { $_.Current.ControlType -eq [System.Windows.Automation.ControlType]::Button } |
-        Select-Object -First 1
+    # Pode haver dois botoes com o mesmo nome (faixa de opcoes e barra de status). Serve o
+    # que aceita acionamento; se ele estiver desabilitado, a janela ja esta nesse layout.
+    # A arvore de acessibilidade demora a aparecer numa janela recem-aberta.
+    $padrao = $null
+    $botao = $null
+    for ($tentativa = 0; $tentativa -lt 15 -and -not $botao; $tentativa++) {
+        $botao = $Raiz.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condicao) |
+            Where-Object { $_.Current.ControlType -eq [System.Windows.Automation.ControlType]::Button -and
+                $_.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$padrao) } |
+            Select-Object -First 1
+        if (-not $botao) { Start-Sleep -Seconds 2 }
+    }
     if (-not $botao) { throw "Botao nao encontrado: $Nome" }
+    if (-not $botao.Current.IsEnabled) { return }
     $botao.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Start-Sleep -Seconds 8
 }
@@ -70,6 +80,8 @@ $ordem = ([IO.File]::ReadAllText((Join-Path $paginas "pages.json"), [Text.Encodi
 $elemento = [System.Windows.Automation.AutomationElement]::FromHandle($janela)
 # Tela de celular: 320 de largura; a primeira tela tem cerca de 500 de altura.
 $larguraCelular = 320; $alturaCelular = 496
+# Parte sempre do layout normal, para o resultado nao depender de como a janela estava.
+Invoke-Botao $elemento "Layout da $([char]0xE1)rea de trabalho"
 if ($Celular) { Invoke-Botao $elemento "Layout m$([char]0xF3)vel" }
 foreach ($nome in $ordem) {
     $pagina = [IO.File]::ReadAllText((Join-Path $paginas "$nome\page.json"), [Text.Encoding]::UTF8) | ConvertFrom-Json
@@ -86,24 +98,58 @@ foreach ($nome in $ordem) {
     if (-not $aba) { throw "Aba da pagina nao encontrada: $($pagina.displayName)" }
     $aba.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
     Start-Sleep -Seconds $EsperaPorPaginaSegundos
+    if ($Celular) {
+        # A tela de celular pode abrir rolada para baixo. O primeiro texto da faixa do
+        # cabecalho e o topo da pagina: pedir para rolar ate ele.
+        $visual = [IO.File]::ReadAllText((Join-Path $paginas "$nome\visuals\${nome}_faixa\visual.json"), [Text.Encoding]::UTF8) | ConvertFrom-Json
+        $topo = $visual.visual.objects.general[0].properties.paragraphs[0].textRuns[0].value
+        $condicaoTopo = New-Object System.Windows.Automation.PropertyCondition(
+            [System.Windows.Automation.AutomationElement]::NameProperty, $topo)
+        $padraoRolar = $null
+        $texto = $elemento.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condicaoTopo) |
+            Where-Object { $_.TryGetCurrentPattern([System.Windows.Automation.ScrollItemPattern]::Pattern, [ref]$padraoRolar) } |
+            Select-Object -First 1
+        if ($texto) {
+            $texto.GetCurrentPattern([System.Windows.Automation.ScrollItemPattern]::Pattern).ScrollIntoView()
+            Start-Sleep -Seconds 4
+        }
+    }
 
-    $r = New-Object JanelaDoPainel+RECT
-    [JanelaDoPainel]::GetWindowRect($janela, [ref]$r) | Out-Null
-    $imagem = New-Object System.Drawing.Bitmap ($r.R - $r.L), ($r.B - $r.T)
-    $grafico = [System.Drawing.Graphics]::FromImage($imagem)
-    $hdc = $grafico.GetHdc()
-    [JanelaDoPainel]::PrintWindow($janela, $hdc, 2) | Out-Null
-    $grafico.ReleaseHdc($hdc); $grafico.Dispose()
     $prefixo = if ($Celular) { "celular" } else { "painel" }
     $saida = Join-Path $destino "$prefixo-$nome.png"
     $faixa = ([IO.File]::ReadAllText((Join-Path $paginas "$nome\visuals\${nome}_faixa\visual.json"), [Text.Encoding]::UTF8) | ConvertFrom-Json).position
+    $largura = $pagina.width
+    # Os ultimos pontos da margem inferior ficam fora: a dica da aba selecionada aparece
+    # por cima deles.
+    $altura = $pagina.height - 10
     if ($Celular) {
         $faixa = ([IO.File]::ReadAllText((Join-Path $paginas "$nome\visuals\${nome}_faixa\mobile.json"), [Text.Encoding]::UTF8) | ConvertFrom-Json).position
-        $recorte = Get-AreaDaPagina $imagem $larguraCelular $alturaCelular $faixa
-    } else {
-        # Os ultimos pontos da margem inferior ficam fora: a dica da aba selecionada
-        # aparece por cima deles.
-        $recorte = Get-AreaDaPagina $imagem $pagina.width ($pagina.height - 10) $faixa
+        # O recorte termina no fim do ultimo visual que cabe inteiro na primeira tela, para
+        # nenhum cartao sair cortado ao meio.
+        $fim = Get-ChildItem (Join-Path $paginas "$nome\visuals") -Recurse -Filter "mobile.json" |
+            ForEach-Object { $p = ([IO.File]::ReadAllText($_.FullName, [Text.Encoding]::UTF8) | ConvertFrom-Json).position; $p.y + $p.height } |
+            Where-Object { $_ -le $alturaCelular } | Measure-Object -Maximum
+        $largura = $larguraCelular
+        $altura = $fim.Maximum + $faixa.y
+    }
+
+    # A pagina pode ainda nao estar desenhada na primeira captura; tenta de novo.
+    $recorte = $null
+    for ($tentativa = 1; -not $recorte; $tentativa++) {
+        $r = New-Object JanelaDoPainel+RECT
+        [JanelaDoPainel]::GetWindowRect($janela, [ref]$r) | Out-Null
+        $imagem = New-Object System.Drawing.Bitmap ($r.R - $r.L), ($r.B - $r.T)
+        $grafico = [System.Drawing.Graphics]::FromImage($imagem)
+        $hdc = $grafico.GetHdc()
+        [JanelaDoPainel]::PrintWindow($janela, $hdc, 2) | Out-Null
+        $grafico.ReleaseHdc($hdc); $grafico.Dispose()
+        try {
+            $recorte = Get-AreaDaPagina $imagem $largura $altura $faixa
+        } catch {
+            $imagem.Dispose()
+            if ($tentativa -ge 5) { throw }
+            Start-Sleep -Seconds 10
+        }
     }
     $pagina_img = $imagem.Clone($recorte, $imagem.PixelFormat)
     $pagina_img.Save($saida, [System.Drawing.Imaging.ImageFormat]::Png)
