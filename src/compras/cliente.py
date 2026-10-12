@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from typing import Any, Protocol
 
 import google.auth
+from google.api_core.exceptions import NotFound
 from google.auth.credentials import Credentials
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import bigquery
@@ -50,9 +51,13 @@ class BigQuery:
             project=config.projeto, credentials=_credenciais(), location=config.local
         )
         self._dataset = bigquery.DatasetReference(config.projeto, config.dataset)
-        dataset = bigquery.Dataset(self._dataset)
-        dataset.location = config.local
-        self._cliente.create_dataset(dataset, exists_ok=True)
+        # Consulta antes de criar: quem só pode escrever no conjunto não pode criá-lo.
+        try:
+            self._cliente.get_dataset(self._dataset)
+        except NotFound:
+            dataset = bigquery.Dataset(self._dataset)
+            dataset.location = config.local
+            self._cliente.create_dataset(dataset)
 
     def estimar_bytes(self, sql: str) -> int | None:
         """Bytes que a consulta leria, ou None quando o BigQuery não informa a estimativa.

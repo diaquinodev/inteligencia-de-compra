@@ -139,6 +139,17 @@ O painel tem seu próprio passo a passo (gerar, abrir, conferir e capturar) em
 
 Saída esperada do último comando: `13 de 13 regras passaram.`
 
+Para fazer tudo de uma vez e saber se algo mudou:
+
+```bash
+python -m compras executar        # recria, testa, compara com a referência, grava o relatório
+```
+
+O comando termina com erro se um teste falhar ou se algum número sair diferente da
+referência guardada no repositório (`powerbi/esperado.json` e `sql/linhas.json`). O
+relatório fica em `relatorios/ultima.md`. Como ler e o que fazer quando falha:
+[docs/operacao.md](docs/operacao.md).
+
 Outras opções:
 
 ```bash
