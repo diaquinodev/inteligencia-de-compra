@@ -1,0 +1,18 @@
+# Avisa e propõe atualização quando uma dependência tem versão nova.
+# Mensal e agrupado: um PR por ecossistema, não um por pacote.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      python:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

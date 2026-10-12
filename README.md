@@ -152,7 +152,7 @@ python -m compras construir --prefixo 5     # recria só as análises (mart_)
 | `COMPRAS_DATASET` | `compras` | conjunto de dados de destino |
 | `COMPRAS_TETO_GIB` | `6` | máximo de dados que uma consulta pode ler |
 
-Verificações do código: `ruff check .`, `mypy src`, `sqlfluff lint sql`, `pytest` (30 testes).
+Verificações do código: `ruff check .`, `mypy src`, `sqlfluff lint sql`, `pytest`.
 
 ## Estrutura
 

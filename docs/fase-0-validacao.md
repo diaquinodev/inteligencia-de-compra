@@ -71,3 +71,14 @@ no modo gratuito do BigQuery.
   estimativa, a proteção é o teto de bytes aplicado pelo próprio BigQuery na execução.
 - `INFORMATION_SCHEMA` do projeto `basedosdados` não é acessível a usuários externos; as
   tabelas foram mapeadas com `bq ls` e `bq show`.
+
+## A origem muda sem aviso (conferido em 12/10/2026)
+
+A tabela pública `contratacao_item` foi recriada em 12/10/2026 com 8.089.396 linhas, 30.028
+a menos que as 8.119.424 de 03/10/2026 (`bq show`: `creationTime` e `numRows`). O recorte
+deste projeto não foi atingido: 2024 e 2025 seguem com 202.617 e 223.620 linhas, as mesmas
+da tabela `raw_item` criada em 03/10. A origem já traz 36.058 linhas de 2026 dentro do
+recorte, a mais recente incluída em 17/04/2026; o ano fica fora por estar incompleto.
+
+Consequência: um resultado conferido uma vez não continua conferido para sempre. Por isso o
+pipeline passou a comparar cada execução com a referência versionada.
