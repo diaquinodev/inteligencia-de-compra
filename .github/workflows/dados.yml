@@ -20,7 +20,7 @@ permissions:
 jobs:
   executar:
     name: recriar, testar e comparar
-    # Só roda depois que o acesso ao Google Cloud foi configurado (docs/seguranca.md).
+    # Só roda depois que o acesso ao Google Cloud foi configurado (docs/acesso-bigquery.md).
     if: ${{ vars.GCP_PROVEDOR != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15

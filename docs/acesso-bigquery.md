@@ -1,6 +1,4 @@
-# Segurança do repositório
-
-## Acesso do GitHub ao BigQuery
+# Acesso do GitHub ao BigQuery
 
 A execução agendada (`.github/workflows/dados.yml`) precisa recriar tabelas no BigQuery.
 Ela não usa chave guardada: a cada execução o GitHub emite um documento assinado dizendo
