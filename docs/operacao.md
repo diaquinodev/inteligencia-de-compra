@@ -58,3 +58,11 @@ Termina com erro se um passo quebrar, se um teste falhar ou se houver desvio.
   | total / Gasto Total | 15.647.279.788,4625 | 15.805.333.119,6591 | +1,0101% |
   | linhas / fato_item_compra | 334.900 | 334.901 | +0,0003% |
   ```
+
+## Execução agendada
+
+O workflow **Dados** roda o mesmo comando toda segunda-feira, às 09:00 UTC, e também por
+disparo manual na aba Actions. O relatório aparece como resumo na página da execução e fica
+anexado como arquivo. Execução vermelha quer dizer: um teste falhou ou um número mudou;
+siga os passos de "Quando a execução falha".
+
