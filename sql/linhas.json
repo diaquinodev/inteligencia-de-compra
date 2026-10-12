@@ -1,0 +1,20 @@
+{
+  "raw_catalogo": 37310,
+  "raw_item": 426237,
+  "raw_contratacao": 67766,
+  "raw_fornecedor": 22056,
+  "stg_fornecedor_documento": 28620,
+  "stg_item": 425820,
+  "stg_item_valido": 334901,
+  "stg_contratacao": 67671,
+  "dim_item": 37310,
+  "dim_fornecedor": 16012,
+  "dim_orgao": 2470,
+  "dim_tempo": 940,
+  "fato_item_compra": 334901,
+  "mart_gasto_fornecedor": 21104,
+  "mart_preco_item": 6822,
+  "mart_economia_item": 6822,
+  "mart_resumo_categoria": 3,
+  "qualidade_resumo": 9
+}

@@ -14,3 +14,5 @@ __pycache__/
 powerbi/scripts/.bibliotecas/
 # painel antigo montado à mão, substituído pelo projeto gerado
 powerbi/*.pbix
+# relatório da última execução (o histórico fica na aba Actions)
+relatorios/

@@ -1,13 +1,19 @@
-"""Linha de comando: `python -m compras construir`, `testar`, `painel` e `esperado`."""
+"""Linha de comando: `python -m compras executar`, `construir`, `testar`, `painel`, `esperado`."""
 
 import argparse
 import json
+import os
+import subprocess
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from google.api_core.exceptions import NotFound
 
-from compras import config, executor, qualidade
+from compras import config, executor, operacao, qualidade, relatorio
 from compras.cliente import BigQuery
+from compras.comparar import achatar
 from compras.painel import esperado, projeto, tema
 
 
@@ -50,6 +56,71 @@ def _testar(_: argparse.Namespace) -> int:
     return 1 if falhas else 0
 
 
+_ESPERADO = config.RAIZ / "powerbi" / "esperado.json"
+_LINHAS = config.RAIZ / "sql" / "linhas.json"
+_RELATORIOS = config.RAIZ / "relatorios"
+
+
+def _gravar_json(destino: Path, dados: Any) -> None:
+    destino.write_text(
+        json.dumps(dados, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
+
+
+def _commit() -> str:
+    """O commit do código que rodou: o GitHub informa; na máquina, pergunta ao git."""
+    if sha := os.getenv("GITHUB_SHA"):
+        return sha[:7]
+    git = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=config.RAIZ
+    )
+    return git.stdout.strip() or "desconhecido"
+
+
+def _executar(args: argparse.Namespace) -> int:
+    cfg = config.carregar()
+    if not _ESPERADO.exists() or not _LINHAS.exists():
+        if not args.aceitar:
+            print(f"Sem referência ({_ESPERADO.name}, {_LINHAS.name}). Rode com --aceitar.")
+            return 1
+        referencia = operacao.Referencia({}, {})
+    else:
+        referencia = operacao.Referencia(
+            achatar(json.loads(_ESPERADO.read_text(encoding="utf-8"))),
+            json.loads(_LINHAS.read_text(encoding="utf-8")),
+        )
+    banco = BigQuery(cfg)
+    passos = executor.listar_passos(cfg.pasta_sql)
+    execucao = operacao.rodar(
+        banco,
+        passos,
+        qualidade.listar_regras(cfg.pasta_testes),
+        referencia,
+        cfg.dataset,
+        cfg.teto_bytes,
+        inicio=datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
+        commit=_commit(),
+    )
+    texto = relatorio.para_markdown(execucao)
+    _RELATORIOS.mkdir(exist_ok=True)
+    _gravar_json(_RELATORIOS / "ultima.json", relatorio.para_json(execucao))
+    (_RELATORIOS / "ultima.md").write_text(texto, encoding="utf-8", newline="\n")
+    # No GitHub Actions, este arquivo vira o resumo que aparece na página da execução.
+    if resumo := os.getenv("GITHUB_STEP_SUMMARY"):
+        with open(resumo, "a", encoding="utf-8") as arquivo:
+            arquivo.write(texto)
+    print(texto)
+    print(f"Relatório em {_RELATORIOS / 'ultima.md'}")
+
+    if args.aceitar and execucao.erro is None and not execucao.regras_que_falharam:
+        _gravar_json(_ESPERADO, esperado.calcular(banco, cfg.teto_bytes))
+        _, linhas = operacao.medir(banco, [p.nome[3:] for p in passos], cfg.dataset, cfg.teto_bytes)
+        _gravar_json(_LINHAS, linhas)
+        print("Referência regravada. Revise a diferença com `git diff` e abra um pull request.")
+        return 0
+    return 0 if execucao.ok else 1
+
+
 def _painel(args: argparse.Namespace) -> int:
     pasta = config.RAIZ / "powerbi"
     texto_dax = (pasta / "medidas.dax").read_text(encoding="utf-8")
@@ -62,18 +133,22 @@ def _painel(args: argparse.Namespace) -> int:
 
 def _esperado(_: argparse.Namespace) -> int:
     cfg = config.carregar()
-    valores = esperado.calcular(BigQuery(cfg), cfg.teto_bytes)
-    destino = config.RAIZ / "powerbi" / "esperado.json"
-    destino.write_text(
-        json.dumps(valores, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
-    )
-    print(f"Valores de conferência gravados em {destino}")
+    _gravar_json(_ESPERADO, esperado.calcular(BigQuery(cfg), cfg.teto_bytes))
+    print(f"Valores de conferência gravados em {_ESPERADO}")
     return 0
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="compras")
     comandos = parser.add_subparsers(required=True)
+
+    completo = comandos.add_parser(
+        "executar", help="recria tudo, testa, compara com a referência e grava o relatório"
+    )
+    completo.add_argument(
+        "--aceitar", action="store_true", help="regrava a referência com os valores desta execução"
+    )
+    completo.set_defaults(func=_executar)
 
     construir = comandos.add_parser("construir", help="recria as tabelas a partir de sql/")
     construir.add_argument("--estimar", action="store_true", help="só estima o custo (dry run)")
