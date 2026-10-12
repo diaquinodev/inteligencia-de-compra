@@ -44,7 +44,7 @@ conferência de totais acusou a diferença antes de qualquer análise.
 
 ## Os testes
 
-`python -m compras testar` — resultado em 03/10/2026: **11 de 11 regras passaram**.
+`python -m compras testar` — resultado em 12/10/2026: **13 de 13 regras passaram**.
 
 | Teste | O que garante |
 |---|---|
@@ -59,6 +59,8 @@ conferência de totais acusou a diferença antes de qualquer análise.
 | `preco_de_referencia_coerente` | p25 ≤ mediana ≤ p75 e grupo com 10+ compras |
 | `economia_coerente` | economia ≥ 0, conservadora ≤ teto, teto ≤ gasto |
 | `participacao_soma_cem_por_cento` | as participações dos fornecedores somam 100% por categoria |
+| `funil_fecha_a_conta` | origem = repetidas + excluídas + válidas; válidas = suspeitas + grupo pequeno + comparáveis, em linhas e em valor |
+| `recorte_igual_a_origem` | o recorte guardado tem, por ano, as mesmas linhas que a tabela pública tem hoje |
 
 ## Os testes pegam erro de verdade?
 
@@ -82,3 +84,18 @@ ok      preco_de_referencia_coerente  (0 violações)
 ```
 
 Os três erros foram pegos por cinco regras. O conjunto descartável foi apagado em seguida.
+
+### Os dois testes de reconciliação (12/10/2026)
+
+Os onze primeiros testes perguntam se cada linha é válida. Estes dois perguntam outra
+coisa: **sumiu alguma linha?** Foram vistos falhando antes de entrar, rodando a consulta
+do teste sobre uma versão adulterada da tabela (nenhuma tabela foi alterada):
+
+- `funil_fecha_a_conta`, com 3 linhas tiradas da contagem de válidas: devolveu
+  `validas: 334898`, `validas_por_destino: 334901`, `linhas_sem_explicacao: 3`.
+- `recorte_igual_a_origem`, com cerca de 0,1% das linhas de 2025 removidas do recorte:
+  devolveu `ano: 2025`, `linhas_na_origem: 223620`, `linhas_no_recorte: 223380`.
+
+O segundo existe porque a origem é republicada inteira sem aviso: em 12/10/2026 a tabela
+pública foi recriada com 30.028 linhas a menos do que tinha em 03/10/2026. O recorte deste
+projeto não foi atingido, e agora há um teste que diz isso em vez de uma suposição.

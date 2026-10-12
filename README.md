@@ -90,7 +90,7 @@ flowchart LR
     D --> E[mart_<br/>três análises]
     D --> F[Power BI]
     C -.-> G[qualidade_resumo]
-    D -.-> H[11 testes de qualidade]
+    D -.-> H[13 testes de qualidade]
 ```
 
 | Etapa | O que mostra | Onde |
@@ -98,7 +98,7 @@ flowchart LR
 | Validação dos dados | cobertura dos campos antes de modelar; total de 2024 de R$ 6,1 trilhões na origem | [docs/fase-0-validacao.md](docs/fase-0-validacao.md) |
 | ELT em SQL | 18 tabelas, um arquivo por tabela, recriáveis com um comando | [sql/](sql/) |
 | SQL analítico | CTEs e window functions: percentis por grupo, ranking, participação acumulada | [sql/22_stg_item_valido.sql](sql/22_stg_item_valido.sql), [sql/50_mart_gasto_fornecedor.sql](sql/50_mart_gasto_fornecedor.sql) |
-| Qualidade de dados | funil de exclusões com valores, 11 testes, validação de CNPJ em SQL, prova com erros plantados | [docs/qualidade.md](docs/qualidade.md) |
+| Qualidade de dados | funil de exclusões com valores, 13 testes, validação de CNPJ em SQL, prova com erros plantados | [docs/qualidade.md](docs/qualidade.md) |
 | Modelo estrela | fato de itens comprados e quatro dimensões | [docs/modelo.md](docs/modelo.md) |
 | Análises | as três perguntas, com números e limites | [docs/analises.md](docs/analises.md) |
 | Decisões | por que cada escolha foi feita e o que ela não resolve | [docs/decisoes.md](docs/decisoes.md) |
@@ -131,13 +131,13 @@ gcloud auth login
 set COMPRAS_PROJETO=seu-projeto   # Linux/macOS: export COMPRAS_PROJETO=seu-projeto
 
 python -m compras construir       # cria as 18 tabelas (cerca de 1 minuto)
-python -m compras testar          # roda os 11 testes de qualidade
+python -m compras testar          # roda os 13 testes de qualidade
 ```
 
 O painel tem seu próprio passo a passo (gerar, abrir, conferir e capturar) em
 [powerbi/README.md](powerbi/README.md); essa parte exige Windows e Power BI Desktop.
 
-Saída esperada do último comando: `11 de 11 regras passaram.`
+Saída esperada do último comando: `13 de 13 regras passaram.`
 
 Outras opções:
 
