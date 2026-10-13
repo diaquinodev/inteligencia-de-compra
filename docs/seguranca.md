@@ -61,5 +61,17 @@ remote: - Required status check "lint, tipos e testes" is expected.
 Estado lido de volta com `gh api repos/$R --jq .security_and_analysis`: `secret_scanning`,
 `secret_scanning_push_protection` e `dependabot_security_updates` como `enabled`.
 
-Não conferido: o bloqueio de segredo no envio não foi testado com um segredo de verdade
-nem com um falso; está ligado, mas a prova de que barra um envio ainda não existe.
+Bloqueio de segredo no envio, testado em 13/10/2026 com uma chave **falsa**, gerada ao
+acaso no formato de uma chave de API da Stripe, numa branch descartável:
+
+```
+remote:     - Push cannot contain secrets
+remote:       —— Stripe API Key ————————————————————————————————————
+remote:          - commit: 191d1093f9529341f53ca0163d88a80c62a4c04f
+remote:            path: segredo-de-teste.txt:2
+ ! [remote rejected] teste-segredo-falso -> teste-segredo-falso
+   (push declined due to repository rule violations)
+```
+
+A branch não chegou a existir no GitHub. O teste cobre um formato de segredo; a varredura
+reconhece os formatos que o GitHub conhece, não qualquer senha escrita num arquivo.

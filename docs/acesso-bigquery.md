@@ -26,5 +26,18 @@ A configuração é feita uma vez pelo dono do projeto, com
 - Recriar as tabelas renova o prazo de 60 dias: a expiração da tabela fato passou de
   02/12/2026 para 12/12/2026.
 
-Não conferido: uma execução pelo agendamento (a primeira é em 19/10/2026) e uma tentativa
-real da conta de serviço de escrever fora do conjunto `compras` (só a configuração foi lida).
+- Nem o dono do projeto consegue se passar pelo robô: a tentativa, em 13/10/2026, foi
+  recusada com `Permission 'iam.serviceAccounts.getAccessToken' denied`. Só o GitHub, na
+  `main` deste repositório, obtém essa identidade.
+
+## A prova que roda toda vez
+
+Como ninguém de fora consegue usar a identidade do robô, o teste do limite roda dentro do
+próprio workflow, antes de qualquer outra coisa: `scripts/provar_limite_do_robo.py` tenta
+consultar dentro de `compras` (tem de conseguir) e criar um conjunto novo no projeto (tem
+de ser recusado). O projeto só tem o conjunto `compras`: sem poder criar outro, o robô não
+tem onde escrever fora dele. Se a permissão for alargada por engano, a execução seguinte
+fica vermelha. O resultado aparece no resumo de cada execução.
+
+Não conferido: uma execução pelo agendamento. O agendamento passou a ser diário; a primeira
+execução automática esperada é a das 09:00 UTC do dia seguinte ao merge.

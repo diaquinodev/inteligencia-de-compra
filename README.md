@@ -3,9 +3,13 @@
 [![Dados](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml/badge.svg?branch=main)](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml)
 [![CI](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/ci.yml)
 
-Análise de gasto (*spend analytics*) em compras indiretas — material de escritório,
-informática e limpeza — com BigQuery, SQL analítico, testes de qualidade de dados, modelo
-estrela e Power BI.
+Onde está o gasto, onde se paga caro e quanto dá para economizar em compras indiretas
+(material de escritório, informática e limpeza): **R$ 15,8 bilhões analisados e R$ 263,7
+milhões de economia defensável**. E um processo que confere sozinho, todo dia, se esses
+números continuam valendo.
+
+Feito com BigQuery, SQL analítico, testes de qualidade de dados, modelo estrela, Power BI
+gerado por código e GitHub Actions.
 
 > **Sobre os dados.** São compras públicas federais de 2024 e 2025, publicadas pela
 > [Base dos Dados](https://basedosdados.org/dataset/bb11d3e6-6bac-412e-bbb8-773369771a70).
@@ -15,7 +19,7 @@ estrela e Power BI.
 
 ## Como sei que o número está certo
 
-Toda segunda-feira o GitHub recria as 18 tabelas, roda os testes e compara o resultado com
+Todo dia o GitHub recria as 18 tabelas, roda os testes e compara o resultado com
 a referência guardada no repositório. O selo **Dados** no topo mostra o estado da última
 execução; o relatório de cada uma está na [aba Actions](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml).
 

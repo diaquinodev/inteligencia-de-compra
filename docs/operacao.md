@@ -61,7 +61,7 @@ Termina com erro se um passo quebrar, se um teste falhar ou se houver desvio.
 
 ## Execução agendada
 
-O workflow **Dados** roda o mesmo comando toda segunda-feira, às 09:00 UTC, e também por
+O workflow **Dados** roda o mesmo comando todo dia, às 09:00 UTC, e também por
 disparo manual na aba Actions. O relatório aparece como resumo na página da execução e fica
 anexado como arquivo. Execução vermelha quer dizer: um teste falhou ou um número mudou;
 siga os passos de "Quando a execução falha".
