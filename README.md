@@ -1,5 +1,8 @@
 # Inteligência de Compra
 
+[![Dados](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml/badge.svg?branch=main)](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml)
+[![CI](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/ci.yml)
+
 Análise de gasto (*spend analytics*) em compras indiretas — material de escritório,
 informática e limpeza — com BigQuery, SQL analítico, testes de qualidade de dados, modelo
 estrela e Power BI.
@@ -9,6 +12,31 @@ estrela e Power BI.
 > Aqui elas fazem o papel do histórico de compras de um ERP corporativo: o método é o mesmo
 > que uma área de Compras ou Controladoria aplicaria aos próprios dados. Os números não
 > descrevem nenhuma empresa privada.
+
+## Como sei que o número está certo
+
+Toda segunda-feira o GitHub recria as 18 tabelas, roda os testes e compara o resultado com
+a referência guardada no repositório. O selo **Dados** no topo mostra o estado da última
+execução; o relatório de cada uma está na [aba Actions](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml).
+
+| Checagem | Pergunta que responde | Onde |
+|---|---|---|
+| 11 testes de regra | cada linha que entra na análise é válida? | [sql/tests/](sql/tests/) |
+| 2 testes de reconciliação | sumiu alguma linha entre a origem e o resultado? | [docs/qualidade.md](docs/qualidade.md) |
+| Comparação com a referência | algum dos 41 valores mudou desde a última revisão? | [docs/operacao.md](docs/operacao.md) |
+| Conferência do painel | o Power BI mostra o mesmo que o BigQuery calcula? (23 de 23) | [powerbi/README.md](powerbi/README.md) |
+
+Teste que nunca falha não prova nada. Por isso há erros plantados de propósito: três erros
+na tabela fato, acusados por cinco das regras; um para cada teste de reconciliação; e uma
+referência adulterada para a comparação. Quando um número muda, a execução fica vermelha e
+diz qual; o valor novo só passa a valer por pull request.
+
+Isso existe porque a origem muda sem aviso: em 12/10/2026 a tabela pública foi republicada
+com 30.028 linhas a menos do que tinha nove dias antes. O recorte deste projeto não foi
+atingido, e é um teste que diz isso, não uma suposição.
+
+O que ainda não foi provado está escrito: ver o fim de [docs/seguranca.md](docs/seguranca.md)
+e de [docs/acesso-bigquery.md](docs/acesso-bigquery.md).
 
 ## O problema
 
@@ -104,6 +132,8 @@ flowchart LR
 | Decisões | por que cada escolha foi feita e o que ela não resolve | [docs/decisoes.md](docs/decisoes.md) |
 | Power BI como código | painel gerado por script (PBIP, TMDL), 30 medidas DAX, conferência automática contra o BigQuery | [powerbi/README.md](powerbi/README.md) |
 | Controle de custo | estimativa e teto de bytes em toda consulta | [src/compras/executor.py](src/compras/executor.py) |
+| Operação | execução semanal, relatório e comparação com a referência | [docs/operacao.md](docs/operacao.md) |
+| Segurança | `main` protegida, varredura de segredos, acesso ao BigQuery sem chave guardada | [docs/seguranca.md](docs/seguranca.md), [docs/acesso-bigquery.md](docs/acesso-bigquery.md) |
 
 ### Achados de qualidade de dados
 
@@ -170,9 +200,10 @@ Verificações do código: `ruff check .`, `mypy src`, `sqlfluff lint sql`, `pyt
 ```
 sql/            um arquivo por tabela, em ordem de execução (raw, stg, dim, fato, mart)
 sql/tests/      testes de qualidade: consultas que devem voltar vazias
-src/compras/    executor, testes de qualidade, gerador do painel e linha de comando
+src/compras/    executor, testes de qualidade, relatório, comparação, gerador do painel
 tests/          testes do executor e do gerador do painel (sem acesso ao BigQuery)
-docs/           validação, qualidade, modelo, análises e decisões
+docs/           validação, qualidade, modelo, análises, decisões, operação e segurança
+scripts/        configuração única do acesso do GitHub ao BigQuery
 powerbi/        projeto do painel (PBIP), medidas DAX e scripts de abrir, conferir e capturar
 ```
 
@@ -181,7 +212,7 @@ powerbi/        projeto do painel (PBIP), medidas DAX e scripts de abrir, confer
 - Ler a descrição livre dos itens para separar especificações dentro do mesmo código de
   catálogo, com gabarito e taxa de acerto medida.
 - Converter embalagens para unidade base (preço por folha, por litro).
-- Agendar o pipeline e migrar o SQL para dbt.
+- Migrar o SQL para dbt.
 
 ## Licença
 
