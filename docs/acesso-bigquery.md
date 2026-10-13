@@ -15,7 +15,16 @@ que vale por pouco tempo (federação de identidade).
 A configuração é feita uma vez pelo dono do projeto, com
 `scripts/configurar-acesso-github.ps1`.
 
-Não conferido: o script ainda não foi executado. Falta provar (1) que o modo gratuito do
-BigQuery aceita a federação, (2) que uma execução disparada de outra branch não recebe
-credencial e (3) que a conta de serviço não escreve fora do conjunto `compras`.
+## Conferido em 13/10/2026
 
+- O script rodou sem erro e o modo gratuito do BigQuery aceitou a federação de identidade.
+- Execução manual na `main`: verde, 13 de 13 testes de qualidade, zero desvios em 41 valores.
+- A mesma execução disparada de uma branch de teste foi recusada no login:
+  `The given credential is rejected by the attribute condition.` A branch foi apagada.
+- Lido de volta: a condição do provedor (este repositório, branch `main`) e o papel da conta
+  de serviço (escrita só no conjunto `compras`).
+- Recriar as tabelas renova o prazo de 60 dias: a expiração da tabela fato passou de
+  02/12/2026 para 12/12/2026.
+
+Não conferido: uma execução pelo agendamento (a primeira é em 19/10/2026) e uma tentativa
+real da conta de serviço de escrever fora do conjunto `compras` (só a configuração foi lida).
