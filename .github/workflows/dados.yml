@@ -1,11 +1,11 @@
 name: Dados
 
-# Recria as tabelas, testa e compara com a referência. Toda segunda-feira e por disparo manual.
+# Recria as tabelas, testa e compara com a referência. Todo dia e por disparo manual.
 # Mantém as tabelas vivas (o modo gratuito do BigQuery apaga em 60 dias) e acusa quando a
 # origem pública muda o resultado.
 on:
   schedule:
-    - cron: "0 9 * * 1" # segundas, 09:00 UTC (06:00 em Brasília)
+    - cron: "0 9 * * *" # todo dia, 09:00 UTC (06:00 em Brasília)
   workflow_dispatch:
 
 # Duas execuções ao mesmo tempo recriariam as mesmas tabelas uma por cima da outra.
@@ -36,6 +36,8 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_PROVEDOR }}
           service_account: ${{ vars.GCP_CONTA_DE_SERVICO }}
       - run: pip install -e .
+      # Antes de usar a identidade do robô, prova que ela não sai do limite.
+      - run: python scripts/provar_limite_do_robo.py
       - run: python -m compras executar
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
