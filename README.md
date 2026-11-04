@@ -59,9 +59,6 @@ São 18 arquivos em [sql/](sql/) (um por tabela). O executor
 ([src/compras/executor.py](src/compras/executor.py)) roda em ordem de nome, estima o custo
 antes e recusa a consulta que passaria do teto de bytes.
 
-TODO (Diego): o tempo para recriar as tabelas e para gerar o painel não está medido neste
-repositório. Se quiser citar um número, meça e substitua esta linha.
-
 O passo a passo de abrir, conferir e fotografar o painel (isso sim exige Windows e Power
 BI Desktop) está em [powerbi/README.md](powerbi/README.md). As decisões de layout estão em
 [powerbi/DESIGN.md](powerbi/DESIGN.md).
@@ -225,16 +222,6 @@ tests/          testes do código, sem acesso ao BigQuery
 docs/           qualidade, modelo, análises, decisões, operação e segurança
 powerbi/        PBIP, medidas DAX, referência de conferência e scripts de abrir e conferir
 ```
-
-## O que eu decidi
-
-TODO (Diego): escrever aqui, em primeira pessoa e curto, as decisões que você quer que um
-recrutador leia (por que o painel é código, o que você não faria de novo, o que ainda não
-está provado). Esta seção foi deixada em branco de propósito.
-
-O registro longo das escolhas já está em [docs/decisoes.md](docs/decisoes.md). O que ainda
-não foi provado está no fim de [docs/seguranca.md](docs/seguranca.md) e de
-[docs/acesso-bigquery.md](docs/acesso-bigquery.md).
 
 ## Licença
 
