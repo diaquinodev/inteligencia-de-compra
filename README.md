@@ -160,9 +160,10 @@ O workflow [Dados](.github/workflows/dados.yml) está agendado para todo dia às
 A conferência das medidas DAX contra o BigQuery é outra coisa:
 [powerbi/scripts/conferir.ps1](powerbi/scripts/conferir.ps1) lê as consultas de
 [powerbi/medidas.dax](powerbi/medidas.dax) no Power BI aberto e compara com
-`esperado.json`. [powerbi/medidas.md](powerbi/medidas.md) registra, em 04/10/2026, 23 de
-23 valores conferidos. Esse passo não entra no CI: só existe no Windows, com o Power BI
-Desktop.
+`esperado.json`. [powerbi/medidas.md](powerbi/medidas.md) registra a conferência em
+04/10/2026, no commit `7eb3e907332f65703ec5201dab731807012312d3`: 23 de 23 valores. Esse
+passo não entra no CI: só existe no Windows, com o Power BI Desktop. Aceitar um valor
+novo na referência não refaz essa conferência ([docs/operacao.md](docs/operacao.md)).
 
 ## Como reproduzir
 
