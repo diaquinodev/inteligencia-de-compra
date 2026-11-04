@@ -3,96 +3,73 @@
 [![Dados](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml/badge.svg?branch=main)](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml)
 [![CI](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/ci.yml)
 
-Onde está o gasto, onde se paga caro e quanto dá para economizar em compras indiretas
-(material de escritório, informática e limpeza): **R$ 15,8 bilhões analisados e R$ 263,7
-milhões de economia defensável**. E um processo que confere sozinho, todo dia, se esses
-números continuam valendo.
-
-Feito com BigQuery, SQL analítico, testes de qualidade de dados, modelo estrela, Power BI
-gerado por código e GitHub Actions.
+O mesmo item sai por preços bem diferentes, conforme a unidade, o comprador e o fornecedor.
+Este repositório entrega um painel de Power BI (gasto, preço, economia) sobre compras públicas
+de escritório, informática e limpeza, no papel de histórico de um ERP.
+O diferencial: o painel é gerado por código e os dados passam por testes e validações.
+O fluxo se repete; se uma regra falha ou um número sai da referência, a execução acusa. Isso o deixa reproduzível e confiável para uma empresa.
 
 > **Sobre os dados.** São compras públicas federais de 2024 e 2025, publicadas pela
 > [Base dos Dados](https://basedosdados.org/dataset/bb11d3e6-6bac-412e-bbb8-773369771a70).
-> Aqui elas fazem o papel do histórico de compras de um ERP corporativo: o método é o mesmo
-> que uma área de Compras ou Controladoria aplicaria aos próprios dados. Os números não
-> descrevem nenhuma empresa privada.
+> Aqui elas fazem o papel do histórico de compras de um ERP. Os números não descrevem
+> nenhuma empresa privada. Os valores da análise e o que eles não permitem concluir estão
+> em [docs/analises.md](docs/analises.md).
 
-## Como sei que o número está certo
+## Como o painel é gerado por código
 
-Todo dia o GitHub recria as 18 tabelas, roda os testes e compara o resultado com
-a referência guardada no repositório. O selo **Dados** no topo mostra o estado da última
-execução; o relatório de cada uma está na [aba Actions](https://github.com/diaquinodev/inteligencia-de-compra/actions/workflows/dados.yml).
+Nada do relatório é montado à mão no Power BI Desktop. Um comando lê três fontes em texto
+e regrava o projeto.
 
-| Checagem | Pergunta que responde | Onde |
+| Fonte | O que define |
+|---|---|
+| [powerbi/medidas.dax](powerbi/medidas.dax) | 30 medidas DAX e as consultas de conferência |
+| [src/compras/painel/paginas.py](src/compras/painel/paginas.py) | as 3 páginas: visuais, campos, posição, no computador e no celular |
+| [src/compras/painel/tema.py](src/compras/painel/tema.py) | 5 temas (compras, financeiro, vendas, pessoas, operações) |
+
+`python -m compras painel` ([src/compras/painel/projeto.py](src/compras/painel/projeto.py))
+apaga o relatório e escreve de novo o PBIP, o tema, as páginas e a tabela `Medidas`.
+Gerar duas vezes produz o mesmo arquivo e remove visual que não está mais no código
+([tests/test_painel.py](tests/test_painel.py)).
+
+O modelo estrela que o painel lê não sai desse comando. As tabelas nascem no BigQuery, um
+arquivo SQL por tabela (`CREATE OR REPLACE`, então rodar de novo chega ao mesmo
+resultado). O TMDL do modelo (tabelas, colunas e relacionamentos) fica versionado em
+[powerbi/inteligencia-de-compra.SemanticModel](powerbi/inteligencia-de-compra.SemanticModel);
+o gerador só exige que ele exista e preenche a tabela de medidas.
+
+```mermaid
+flowchart LR
+    A[Dados<br/>Base dos Dados] --> B[Limpeza<br/>stg_]
+    B --> C[Modelo estrela<br/>dim_ e fato_]
+    C --> D[Medidas e painel<br/>DAX e PBIP]
+    D --> E[Testes<br/>SQL, pytest, conferência]
+```
+
+| Etapa | Onde | O que acontece |
 |---|---|---|
-| 11 testes de regra | cada linha que entra na análise é válida? | [sql/tests/](sql/tests/) |
-| 2 testes de reconciliação | sumiu alguma linha entre a origem e o resultado? | [docs/qualidade.md](docs/qualidade.md) |
-| Comparação com a referência | algum dos 41 valores mudou desde a última revisão? | [docs/operacao.md](docs/operacao.md) |
-| Conferência do painel | o Power BI mostra o mesmo que o BigQuery calcula? (23 de 23) | [powerbi/README.md](powerbi/README.md) |
+| Dados | [sql/10_raw_catalogo.sql](sql/10_raw_catalogo.sql) a [sql/13_raw_fornecedor.sql](sql/13_raw_fornecedor.sql) | recorte da origem, sem transformar |
+| Limpeza | [sql/20_stg_fornecedor_documento.sql](sql/20_stg_fornecedor_documento.sql) a [sql/23_stg_contratacao.sql](sql/23_stg_contratacao.sql) | tipos, duplicata, motivo de exclusão, referência de preço |
+| Modelo estrela | [sql/30_dim_item.sql](sql/30_dim_item.sql) a [sql/33_dim_tempo.sql](sql/33_dim_tempo.sql) e [sql/40_fato_item_compra.sql](sql/40_fato_item_compra.sql) | fato de item comprado e quatro dimensões: item, fornecedor, órgão, tempo. O desenho está em [docs/modelo.md](docs/modelo.md) |
+| Análises | [sql/50_mart_gasto_fornecedor.sql](sql/50_mart_gasto_fornecedor.sql) a [sql/53_mart_resumo_categoria.sql](sql/53_mart_resumo_categoria.sql) | respostas prontas das três perguntas |
+| Funil | [sql/60_qualidade_resumo.sql](sql/60_qualidade_resumo.sql) | quantas linhas e quanto valor cada regra de limpeza tirou ([docs/qualidade.md](docs/qualidade.md)) |
+| Medidas e painel | `medidas.dax`, `paginas.py`, `tema.py` | `python -m compras painel` |
+| Testes | [sql/tests/](sql/tests/), [tests/](tests/) | abaixo |
 
-Teste que nunca falha não prova nada. Por isso há erros plantados de propósito: três erros
-na tabela fato, acusados por cinco das regras; um para cada teste de reconciliação; e uma
-referência adulterada para a comparação. Quando um número muda, a execução fica vermelha e
-diz qual; o valor novo só passa a valer por pull request.
+São 18 arquivos em [sql/](sql/) (um por tabela). O executor
+([src/compras/executor.py](src/compras/executor.py)) roda em ordem de nome, estima o custo
+antes e recusa a consulta que passaria do teto de bytes.
 
-Isso existe porque a origem muda sem aviso: em 12/10/2026 a tabela pública foi republicada
-com 30.028 linhas a menos do que tinha nove dias antes. O recorte deste projeto não foi
-atingido, e é um teste que diz isso, não uma suposição.
+TODO (Diego): o tempo para recriar as tabelas e para gerar o painel não está medido neste
+repositório. Se quiser citar um número, meça e substitua esta linha.
 
-O que ainda não foi provado está escrito: ver o fim de [docs/seguranca.md](docs/seguranca.md)
-e de [docs/acesso-bigquery.md](docs/acesso-bigquery.md).
-
-## O problema
-
-Organizações grandes compram o mesmo item por preços muito diferentes, conforme a unidade,
-o comprador e o fornecedor. Três perguntas orientam o projeto:
-
-1. **Onde está o gasto?**
-2. **Onde se paga caro?**
-3. **Quanto dá para economizar, e por onde começar?**
-
-## O que os dados mostram
-
-Base analisada: **334.901 itens comprados**, **R$ 15,8 bilhões**, 2.470 órgãos e 16.012
-fornecedores.
-
-| | Informática | Escritório | Limpeza |
-|---|---|---|---|
-| Gasto (R$ milhões) | 12.923,0 | 2.274,2 | 608,2 |
-| Itens comprados | 77.068 | 185.629 | 72.204 |
-| Fornecedores | 6.913 | 8.131 | 6.060 |
-| Fornecedores que somam 80% do gasto | 116 | 309 | 565 |
-| Economia defensável (R$ milhões) | 190,8 | 55,2 | 17,7 |
-
-- **O gasto está em informática (82%), o volume de trabalho em escritório (55% dos itens).**
-- **O mercado é pulverizado.** Em informática, 116 fornecedores concentram 80% do gasto e
-  outros 6.384 dividem os últimos 5%.
-- **O mesmo produto tem preços bem diferentes.** Papel A4 75 g/m², 377 compras de 169
-  órgãos: metade pagou até R$ 22,04 e um quarto pagou mais de R$ 26,16.
-- **Economia defensável de R$ 263,7 milhões**, 6,8% do gasto nos itens de preço homogêneo.
-
-### A decisão que isso sustenta
-
-1. Adotar **preço de referência por item** nos itens de preço homogêneo: compra acima do
-   terceiro quartil exige justificativa.
-2. **Centralizar a compra** dos itens de alto volume, começando por monitores, notebooks e
-   papel A4.
-3. **Reduzir a cauda de fornecedores**: mais de 6 mil por categoria para 5% do gasto.
-
-### O que os dados não permitem concluir
-
-- Preço acima da referência **não indica irregularidade**: frete, lote, prazo e marca
-  explicam parte da diferença. A análise aponta onde olhar.
-- O código de catálogo não garante produto idêntico. Por isso há três estimativas de
-  economia (R$ 2.269,8 mi, R$ 1.074,9 mi e R$ 263,7 mi), e a decisão usa a menor. O
-  raciocínio está em [docs/analises.md](docs/analises.md).
+O passo a passo de abrir, conferir e fotografar o painel (isso sim exige Windows e Power
+BI Desktop) está em [powerbi/README.md](powerbi/README.md). As decisões de layout estão em
+[powerbi/DESIGN.md](powerbi/DESIGN.md).
 
 ## O painel
 
-Três páginas, uma por pergunta. O painel é **gerado por código** e seus números são
-conferidos automaticamente contra o BigQuery (23 de 23 valores conferem); o processo está em
-[powerbi/README.md](powerbi/README.md) e as decisões de design em
-[powerbi/DESIGN.md](powerbi/DESIGN.md).
+As imagens abaixo já estão no repositório (`docs/img/`). Cada página também tem layout de
+celular, gerado pelo mesmo código.
 
 ![Onde está o gasto](docs/img/painel-gasto.png)
 
@@ -100,54 +77,95 @@ conferidos automaticamente contra o BigQuery (23 de 23 valores conferem); o proc
 
 ![Quanto dá para economizar](docs/img/painel-economia.png)
 
-Cada página tem também um layout para celular, gerado pelo mesmo código (aqui, o topo de cada uma):
-
 <p>
   <img src="docs/img/celular-gasto.png" width="30%" align="top" alt="Onde está o gasto, no celular">
   <img src="docs/img/celular-preco.png" width="30%" align="top" alt="Onde se paga caro, no celular">
   <img src="docs/img/celular-economia.png" width="30%" align="top" alt="Quanto dá para economizar, no celular">
 </p>
 
-As cores vêm de um tema por área de negócio (compras, financeiro, vendas, pessoas,
-operações), com contraste conferido por teste. As decisões estão em
-[powerbi/DESIGN.md](powerbi/DESIGN.md).
+## Testes e validações
 
-## Como foi construído
+Há duas camadas. As regras de dados rodam no BigQuery. Os testes de Python não precisam
+de banco: conferem o gerador, o executor e a comparação com a referência.
 
-```mermaid
-flowchart LR
-    A[Base dos Dados<br/>8,1 milhões de itens] --> B[raw_<br/>recorte]
-    B --> C[stg_<br/>limpeza e referência de preço]
-    C --> D[dim_ e fato_<br/>modelo estrela]
-    D --> E[mart_<br/>três análises]
-    D --> F[Power BI]
-    C -.-> G[qualidade_resumo]
-    D -.-> H[13 testes de qualidade]
+### Regras de dados (13 consultas)
+
+Cada arquivo de [sql/tests/](sql/tests/) é uma consulta que tem de voltar vazia. Qualquer
+linha é violação. O nome do arquivo é o nome da regra
+([src/compras/qualidade.py](src/compras/qualidade.py)). O detalhe e o funil estão em
+[docs/qualidade.md](docs/qualidade.md).
+
+| Regra | O que confere |
+|---|---|
+| [fato_chave_unica](sql/tests/fato_chave_unica.sql) | cada item de contratação aparece uma vez |
+| [fato_dimensoes_presentes](sql/tests/fato_dimensoes_presentes.sql) | toda linha da fato encontra item, fornecedor, órgão e data |
+| [fato_valores_positivos](sql/tests/fato_valores_positivos.sql) | quantidade, preço e total maiores que zero |
+| [fato_total_igual_preco_vezes_quantidade](sql/tests/fato_total_igual_preco_vezes_quantidade.sql) | total = preço × quantidade (tolerância de 1%) |
+| [fato_total_bate_com_camada_limpa](sql/tests/fato_total_bate_com_camada_limpa.sql) | nada se perde nem se duplica entre a camada limpa e a fato |
+| [dimensoes_chave_unica](sql/tests/dimensoes_chave_unica.sql) | código do item, documento do fornecedor e CNPJ do órgão não se repetem |
+| [fornecedor_cnpj_valido](sql/tests/fornecedor_cnpj_valido.sql) | os dois dígitos verificadores de cada CNPJ conferem |
+| [pessoa_fisica_nao_identificada](sql/tests/pessoa_fisica_nao_identificada.sql) | nenhum CPF ou nome de pessoa física chega ao modelo |
+| [preco_de_referencia_coerente](sql/tests/preco_de_referencia_coerente.sql) | p25 ≤ mediana ≤ p75 e grupo com 10+ compras |
+| [economia_coerente](sql/tests/economia_coerente.sql) | economia ≥ 0, conservadora ≤ teto, teto ≤ gasto |
+| [participacao_soma_cem_por_cento](sql/tests/participacao_soma_cem_por_cento.sql) | as participações dos fornecedores somam 100% por categoria |
+| [funil_fecha_a_conta](sql/tests/funil_fecha_a_conta.sql) | origem = repetidas + excluídas + válidas; válidas = suspeitas + grupo pequeno + comparáveis, em linhas e em valor |
+| [recorte_igual_a_origem](sql/tests/recorte_igual_a_origem.sql) | o recorte tem, por ano, as mesmas linhas que a tabela pública tem hoje |
+
+```bash
+python -m compras testar
 ```
 
-| Etapa | O que mostra | Onde |
-|---|---|---|
-| Validação dos dados | cobertura dos campos antes de modelar; total de 2024 de R$ 6,1 trilhões na origem | [docs/fase-0-validacao.md](docs/fase-0-validacao.md) |
-| ELT em SQL | 18 tabelas, um arquivo por tabela, recriáveis com um comando | [sql/](sql/) |
-| SQL analítico | CTEs e window functions: percentis por grupo, ranking, participação acumulada | [sql/22_stg_item_valido.sql](sql/22_stg_item_valido.sql), [sql/50_mart_gasto_fornecedor.sql](sql/50_mart_gasto_fornecedor.sql) |
-| Qualidade de dados | funil de exclusões com valores, 13 testes, validação de CNPJ em SQL, prova com erros plantados | [docs/qualidade.md](docs/qualidade.md) |
-| Modelo estrela | fato de itens comprados e quatro dimensões | [docs/modelo.md](docs/modelo.md) |
-| Análises | as três perguntas, com números e limites | [docs/analises.md](docs/analises.md) |
-| Decisões | por que cada escolha foi feita e o que ela não resolve | [docs/decisoes.md](docs/decisoes.md) |
-| Power BI como código | painel gerado por script (PBIP, TMDL), 30 medidas DAX, conferência automática contra o BigQuery | [powerbi/README.md](powerbi/README.md) |
-| Controle de custo | estimativa e teto de bytes em toda consulta | [src/compras/executor.py](src/compras/executor.py) |
-| Operação | execução semanal, relatório e comparação com a referência | [docs/operacao.md](docs/operacao.md) |
-| Segurança | `main` protegida, varredura de segredos, acesso ao BigQuery sem chave guardada | [docs/seguranca.md](docs/seguranca.md), [docs/acesso-bigquery.md](docs/acesso-bigquery.md) |
+São 13 arquivos. Quando nenhum devolve linha, a última frase é `13 de 13 regras passaram.`
 
-### Achados de qualidade de dados
+Um ensaio com erros plantados (fato duplicada, preço negativo, fornecedor inexistente) está
+escrito em [docs/qualidade.md](docs/qualidade.md). Foi feito num conjunto descartável e
+apagado em seguida. Não é um teste que o CI roda.
 
-- 30.238 linhas de **serviço** com código igual ao de materiais do catálogo, somando
-  R$ 13,7 bilhões: sem o filtro, o gasto quase dobraria.
-- 948 grafias de unidade de medida, padronizadas para 570.
-- 11.702 compras com **preço suspeito** (mais de 10 vezes fora da mediana), como um
-  microcomputador a R$ 144,9 milhões: o valor do lote no campo de preço unitário.
-- Cabeçalhos de contratação repetidos duplicavam itens na fato; o teste de conferência de
-  totais acusou 269 linhas a mais antes de qualquer análise.
+### Testes de Python (sem BigQuery)
+
+Em [tests/](tests/) há 43 funções. O pytest coleta 57 casos, porque seis delas repetem
+para cada uma das 3 páginas ou para cada um dos 5 temas.
+
+| Arquivo | O que confere |
+|---|---|
+| [tests/test_qualidade.py](tests/test_qualidade.py) | consulta vazia passa; com linhas, falha; o nome da regra é o do arquivo |
+| [tests/test_executor.py](tests/test_executor.py) | os SQL saem em ordem de nome; consulta acima do teto não executa; estimar não executa |
+| [tests/test_painel.py](tests/test_painel.py) | medida com formato e sem nome repetido; JSON no esquema da Microsoft; campo do visual existe no modelo; visual cabe na página e não se sobrepõe; um número em destaque por página; gráfico com uma série só; contraste dos temas (texto 4,5:1, marca 3:1); layout de celular; gerar de novo dá o mesmo resultado e apaga visual antigo |
+| [tests/test_comparar.py](tests/test_comparar.py) | contagem tem de ser igual; soma aceita a tolerância; valor que some ou aparece é desvio |
+| [tests/test_operacao.py](tests/test_operacao.py) | regra que falha ou valor diferente da referência derruba a execução; o relatório em JSON vai e volta |
+
+```bash
+pytest
+```
+
+A tolerância das somas em reais está em [src/compras/comparar.py](src/compras/comparar.py)
+(`TOLERANCIA = 1e-12`). Contagem de linhas é exata. O critério completo está em
+[docs/operacao.md](docs/operacao.md).
+
+O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) roda `ruff check`, `ruff format
+--check`, `mypy src`, `sqlfluff lint sql` e `pytest`. Não fala com o BigQuery nem abre o
+Power BI.
+
+### Conferência do painel e execução inteira
+
+`python -m compras executar` recria as 18 tabelas, roda as 13 regras, compara o resultado
+com a referência versionada e grava `relatorios/ultima.md`. A referência é
+[powerbi/esperado.json](powerbi/esperado.json) (valores que o painel deve mostrar) e
+[sql/linhas.json](sql/linhas.json) (linhas de cada tabela). Se uma regra falha ou um valor
+desvia, o comando termina com erro. Aceitar o número novo é explícito:
+`python -m compras executar --aceitar`, revisar o diff e abrir pull request. A `main` não
+aceita envio direto ([docs/seguranca.md](docs/seguranca.md)).
+
+O workflow [Dados](.github/workflows/dados.yml) está agendado para todo dia às 09:00 UTC
+(e também por disparo manual) e roda esse mesmo comando. O job só executa se
+`vars.GCP_PROVEDOR` estiver definido ([docs/acesso-bigquery.md](docs/acesso-bigquery.md)).
+
+A conferência das medidas DAX contra o BigQuery é outra coisa:
+[powerbi/scripts/conferir.ps1](powerbi/scripts/conferir.ps1) lê as consultas de
+[powerbi/medidas.dax](powerbi/medidas.dax) no Power BI aberto e compara com
+`esperado.json`. [powerbi/medidas.md](powerbi/medidas.md) registra, em 04/10/2026, 23 de
+23 valores conferidos. Esse passo não entra no CI: só existe no Windows, com o Power BI
+Desktop.
 
 ## Como reproduzir
 
@@ -164,24 +182,19 @@ pip install -e ".[dev]"
 gcloud auth login
 set COMPRAS_PROJETO=seu-projeto   # Linux/macOS: export COMPRAS_PROJETO=seu-projeto
 
-python -m compras construir       # cria as 18 tabelas (cerca de 1 minuto)
-python -m compras testar          # roda os 13 testes de qualidade
+python -m compras construir       # cria as 18 tabelas
+python -m compras testar          # roda as 13 regras de qualidade
+python -m compras painel          # gera o projeto do Power BI a partir do código
+pytest                            # testes do código, sem BigQuery
 ```
 
-O painel tem seu próprio passo a passo (gerar, abrir, conferir e capturar) em
-[powerbi/README.md](powerbi/README.md); essa parte exige Windows e Power BI Desktop.
-
-Saída esperada do último comando: `13 de 13 regras passaram.`
-
-Para fazer tudo de uma vez e saber se algo mudou:
+Para recriar, testar e saber se algum número saiu da referência:
 
 ```bash
-python -m compras executar        # recria, testa, compara com a referência, grava o relatório
+python -m compras executar
 ```
 
-O comando termina com erro se um teste falhar ou se algum número sair diferente da
-referência guardada no repositório (`powerbi/esperado.json` e `sql/linhas.json`). O
-relatório fica em `relatorios/ultima.md`. Como ler e o que fazer quando falha:
+O relatório fica em `relatorios/ultima.md`. Como ler e o que fazer quando falha:
 [docs/operacao.md](docs/operacao.md).
 
 Outras opções:
@@ -189,6 +202,7 @@ Outras opções:
 ```bash
 python -m compras construir --estimar       # só estima o custo, não executa
 python -m compras construir --prefixo 5     # recria só as análises (mart_)
+python -m compras esperado                  # grava powerbi/esperado.json a partir do BigQuery
 ```
 
 | Variável | Padrão | Para quê |
@@ -197,26 +211,30 @@ python -m compras construir --prefixo 5     # recria só as análises (mart_)
 | `COMPRAS_DATASET` | `compras` | conjunto de dados de destino |
 | `COMPRAS_TETO_GIB` | `6` | máximo de dados que uma consulta pode ler |
 
-Verificações do código: `ruff check .`, `mypy src`, `sqlfluff lint sql`, `pytest`.
+Verificações do código, as mesmas do CI: `ruff check .`, `ruff format --check .`,
+`mypy src`, `sqlfluff lint sql`, `pytest`.
 
-## Estrutura
+Abrir o painel, carregar os dados e conferir os 23 valores exige Windows e Power BI
+Desktop. O roteiro está em [powerbi/README.md](powerbi/README.md).
 
 ```
-sql/            um arquivo por tabela, em ordem de execução (raw, stg, dim, fato, mart)
-sql/tests/      testes de qualidade: consultas que devem voltar vazias
-src/compras/    executor, testes de qualidade, relatório, comparação, gerador do painel
-tests/          testes do executor e do gerador do painel (sem acesso ao BigQuery)
-docs/           validação, qualidade, modelo, análises, decisões, operação e segurança
-scripts/        configuração única do acesso do GitHub ao BigQuery
-powerbi/        projeto do painel (PBIP), medidas DAX e scripts de abrir, conferir e capturar
+sql/            um arquivo por tabela, em ordem (raw, stg, dim, fato, mart)
+sql/tests/      13 regras de qualidade: consultas que devem voltar vazias
+src/compras/    executor, testes de qualidade, comparação, gerador do painel
+tests/          testes do código, sem acesso ao BigQuery
+docs/           qualidade, modelo, análises, decisões, operação e segurança
+powerbi/        PBIP, medidas DAX, referência de conferência e scripts de abrir e conferir
 ```
 
-## Próximos passos
+## O que eu decidi
 
-- Ler a descrição livre dos itens para separar especificações dentro do mesmo código de
-  catálogo, com gabarito e taxa de acerto medida.
-- Converter embalagens para unidade base (preço por folha, por litro).
-- Migrar o SQL para dbt.
+TODO (Diego): escrever aqui, em primeira pessoa e curto, as decisões que você quer que um
+recrutador leia (por que o painel é código, o que você não faria de novo, o que ainda não
+está provado). Esta seção foi deixada em branco de propósito.
+
+O registro longo das escolhas já está em [docs/decisoes.md](docs/decisoes.md). O que ainda
+não foi provado está no fim de [docs/seguranca.md](docs/seguranca.md) e de
+[docs/acesso-bigquery.md](docs/acesso-bigquery.md).
 
 ## Licença
 
