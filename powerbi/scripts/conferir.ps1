@@ -2,6 +2,8 @@
 # Antes: python -m compras esperado   (grava powerbi\esperado.json)
 #        powerbi\scripts\abrir.ps1    (abre o painel e carrega os dados)
 # Sai com codigo 1 se algum numero divergir.
+# Nao altera powerbi\medidas.md. Se todos conferirem, atualize la a data e o commit
+# (git rev-parse HEAD).
 param([double]$Tolerancia = 1e-6)
 
 . (Join-Path $PSScriptRoot "comum.ps1")

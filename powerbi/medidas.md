@@ -35,8 +35,16 @@ visual só com `nome` junta matriz e filiais e deixa a Posição em branco.
 ## Conferência
 
 `scripts/conferir.ps1` executa as medidas no painel aberto e compara com os valores que
-`python -m compras esperado` calcula no BigQuery. Resultado em 04/10/2026: 23 de 23 valores
-conferem. Sem filtro:
+`python -m compras esperado` calcula no BigQuery. Resultado em 04/10/2026, no commit
+`7eb3e907332f65703ec5201dab731807012312d3`: 23 de 23 valores conferem.
+
+O script imprime o resultado e não grava esta frase. Na próxima conferência que passar,
+substitua a data e o commit pelos do código conferido (`git rev-parse HEAD`, na raiz do
+repositório, com as alterações já commitadas). Se um valor novo for aceito em
+`esperado.json`, a frase também precisa mudar
+([docs/operacao.md](../docs/operacao.md)).
+
+Sem filtro:
 
 | Medida | Power BI | Consulta de origem no BigQuery |
 |---|---|---|
