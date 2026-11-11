@@ -69,7 +69,9 @@ ok      Itens Comprados                                        334.901,0000
 23 de 23 valores conferem com o BigQuery.
 ```
 
-O passo 4 sai com código 1 se qualquer valor divergir.
+O passo 4 sai com código 1 se qualquer valor divergir. Quando todos conferem, atualize a
+data e o commit em [medidas.md](medidas.md), como descrito lá. O script não grava esse
+registro.
 
 ## O que é verificado, e como
 

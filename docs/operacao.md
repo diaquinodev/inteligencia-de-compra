@@ -48,6 +48,22 @@ Termina com erro se um passo quebrar, se um teste falhar ou se houver desvio.
    aceita envio direto.
 4. Se não é legítima, corrija a causa. A referência não muda.
 
+## Depois de aceitar um valor novo
+
+`--aceitar` regrava `powerbi/esperado.json` e `sql/linhas.json` com o que esta execução
+calculou no BigQuery. A regravação só ocorre se a execução não parou com erro e nenhuma
+regra de `sql/tests/` falhou. O comando não abre o Power BI, não executa
+`powerbi/scripts/conferir.ps1` e não altera `powerbi/medidas.md`.
+
+O workflow diário roda `python -m compras executar`: recria as tabelas, testa e compara
+o BigQuery com `esperado.json`. Não executa `conferir.ps1`. A frase de conferência em
+[powerbi/medidas.md](../powerbi/medidas.md) permanece no commit já registrado até alguém
+repetir a conferência do painel. Depois de aceitar, carregue o painel de novo com
+`powerbi/scripts/abrir.ps1` e rode `conferir.ps1`. `conferir.ps1` lê o modelo aberto e
+não recarrega os dados. Se todos os valores conferirem, atualize nessa frase a data e o
+commit (`git rev-parse HEAD`). O commit registrado indica até qual código a conferência
+do painel vale.
+
 ## Conferido em 12/10/2026
 
 - Duas execuções seguidas: zero desvios em 41 valores comparados.
